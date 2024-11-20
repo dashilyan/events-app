@@ -9,13 +9,12 @@ const Breadcrumbs = () => {
   const breadcrumbsMapping = {
     '': 'Главная',
     'main': 'Услуги',
-    'visits': 'Заявки',
     'description': 'Описание'
   };
 
   return (
     <nav className="breadcrumbs">
-      <span style={{ color: '#00A88E' }}>Главная</span>
+      <span style={{ color: '#006CDC' }}>Главная</span>
       {pathnames.map((pathname, index) => {
         const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
 
@@ -31,7 +30,7 @@ const Breadcrumbs = () => {
           <span key={routeTo}>
             {'>'} {/* Разделитель */}
             {(
-              <span style={{ color: '#00A88E' }}> {/* Некликаемый элемент с тем же цветом */}
+              <span style={{ color: '#006CDC' }}> {/* Некликаемый элемент с тем же цветом */}
                 {breadcrumbsMapping[pathname] || pathname}
               </span>
             )}

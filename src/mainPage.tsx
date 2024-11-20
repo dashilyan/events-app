@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate, Link } from 'react-router-dom';
-import Breadcrumbs from './breadcrumbs';
 import Navbar from './navbar';
 
 const mockEvents = [
@@ -10,6 +9,7 @@ const mockEvents = [
     event_name: 'Выставка робототехники',
     event_type: 'Выставка',
     duration: '2 часа',
+    description: 'Описание выставки',
     img_url: 'http://192.168.56.101:9000/static/children.jpg',
   },
   {
@@ -17,6 +17,7 @@ const mockEvents = [
     event_name: 'Лекция по искусственному интеллекту',
     event_type: 'Лекция',
     duration: '1.5 часа',
+    description: 'Описание лекция',
     img_url: 'http://192.168.56.101:9000/static/children.jpg',
   },
   {
@@ -24,9 +25,12 @@ const mockEvents = [
     event_name: 'Мастер-класс по программированию',
     event_type: 'Мастер-класс',
     duration: '3 часа',
-    img_url: 'http://192.168.56.101:9000/static/children.jpg',
+    description: 'Описание мастер-класса',
+    img_url: null,
   },
 ];
+
+const defaultImageUrl = 'http://192.168.56.101:9000/static/8.png';
 
 const MainPage = () => {
   const [inputValue, setInputValue] = useState('');
@@ -48,7 +52,7 @@ const MainPage = () => {
         setVisitId(visitData?.visit?.pk || null);
         setCartCount(visitData?.visit?.cart_count || 0);
       } catch (error) {
-        console.error('Ошибка при загрузке данных угроз:', error);
+        console.error('Ошибка при загрузке данных мероприятий:', error);
         setEvents(mockEvents);
         setFilteredEvents(mockEvents);
         const visitData = mockEvents.find(item => item.visit);
@@ -71,20 +75,6 @@ const MainPage = () => {
     }
   };
 
-  const handleAddEvent = async (eventId) => {
-    try {
-      const response = await fetch('/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event_id: eventId }),
-      });
-      if (response.ok) alert('Мероприятие добавлено в корзину');
-      else alert('Ошибка при регистрации на мероприятие');
-    } catch (error) {
-      console.error('Ошибка при регистрации на мероприяти: ', error);
-    }
-  };
-
   return (
     <div>
       {/* BMSTU header */}
@@ -102,7 +92,8 @@ const MainPage = () => {
       {/* Search bar and cart */}
       <div className="menu row">
         <div className="search">
-          <form onSubmit={handleSearchSubmit}
+          <form 
+          onSubmit={handleSearchSubmit}
             // onSubmit={(e) => {
             //   e.preventDefault();
             //   const filtered = events.filter((event) =>
@@ -157,7 +148,8 @@ const MainPage = () => {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        handleAddEvent(event.pk)
+                        setCartCount(cartCount+1);
+                        // handleAddEvent(event.pk)
                       }}
                       className="add-event-button"
                     >
@@ -168,7 +160,7 @@ const MainPage = () => {
                   {/* Image Section */}
                   <div className="col-md-8 event-img">
                     <img
-                      src={event.img_url}
+                      src={event.img_url || defaultImageUrl}
                       alt={event.event_name}
                       className="img-fluid h-100 w-100 object-cover"
                     />

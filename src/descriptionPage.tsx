@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from './navbar';
-import Breadcrumbs from './breadcrumbs';
 
 // Мок-данные для мероприятий
 const mockEvents = [
@@ -28,11 +27,11 @@ const mockEvents = [
     event_type: 'Мастер-класс',
     duration: '3 часа',
     description: 'Описание мастер-класса',
-    img_url: 'http://192.168.56.101:9000/static/children.jpg',
+    img_url: null,
   },
 ];
 
-const defaultImageUrl = 'http://192.168.56.101:9000/static/default-event.jpg';
+const defaultImageUrl = 'http://192.168.56.101:9000/static/8.png';
 
 const EventDescription = () => {
   const { eventId } = useParams();
