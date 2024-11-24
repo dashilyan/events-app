@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from './navbar';
+import Breadcrumbs from './breadcrumbs';
 
 // Мок-данные для мероприятий
 const mockEvents = [
@@ -11,7 +12,7 @@ const mockEvents = [
     event_type: 'Выставка',
     duration: '2 часа',
     description: 'Описание выставки',
-    img_url: 'http://192.168.56.101:9000/static/children.jpg',
+    img_url: null,
   },
   {
     pk: 2,
@@ -19,7 +20,7 @@ const mockEvents = [
     event_type: 'Лекция',
     duration: '1.5 часа',
     description: 'Описание лекция',
-    img_url: 'http://192.168.56.101:9000/static/children.jpg',
+    img_url: null,
   },
   {
     pk: 3,
@@ -92,7 +93,8 @@ const EventDescription = () => {
       <Navbar />
       </header>
       <div className="container">
-      <div className="event-card-long row mb-4 my-5" key={event.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
+      <Breadcrumbs></Breadcrumbs>
+      <div className="event-card-long row my-4" key={event.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
         <div className="event-card-long-text col-md-6" style={{margin:'0', padding: '2em' }}>
           <h1>{event.event_name}</h1>
           <p>{event.event_type}</p>

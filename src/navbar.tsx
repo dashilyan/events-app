@@ -6,8 +6,8 @@ import './App.css'; // Импортируем стили для navbar
 const Navbar = () => {
   return (
     <div className="navbar">
-      <Link to="/" className="navbar-link">Главная</Link>
-      <Link to="/main" className="navbar-link">Услуги</Link>
+      <Link to="/menu" className="navbar-link">Меню</Link>
+      <Link to="/events" className="navbar-link">Мероприятия</Link>
     </div>
   );
 };

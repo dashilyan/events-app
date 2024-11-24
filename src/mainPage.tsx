@@ -10,7 +10,7 @@ const mockEvents = [
     event_type: 'Выставка',
     duration: '2 часа',
     description: 'Описание выставки',
-    img_url: 'http://192.168.56.101:9000/static/children.jpg',
+    img_url: null,
   },
   {
     pk: 2,
@@ -18,7 +18,7 @@ const mockEvents = [
     event_type: 'Лекция',
     duration: '1.5 часа',
     description: 'Описание лекция',
-    img_url: 'http://192.168.56.101:9000/static/children.jpg',
+    img_url: null,
   },
   {
     pk: 3,
@@ -71,7 +71,16 @@ const MainPage = () => {
       const filteredResult = result.filter(item => item.pk !== undefined);
       setFilteredEvents(filteredResult);
     } catch (error) {
+      try{
+        e.preventDefault();
+        const filtered = events.filter((event) =>
+        event.event_name.toLowerCase().includes(inputValue.toLowerCase())
+        );
+        setFilteredEvents(filtered);
+      }
+      catch(error){
       console.error('Ошибка при выполнении поиска:', error);
+      }
     }
   };
 
@@ -117,7 +126,7 @@ const MainPage = () => {
             <input type="submit" value="" className="search-button" />
           </form>
         </div>
-        <div className="cart">
+        {/* <div className="cart">
           <a href={`/visit/${visitId}`}>
             <div className="cart-icon">
               <img
@@ -127,7 +136,7 @@ const MainPage = () => {
             </div>
             <div className="cart-count">{cartCount}</div>
           </a>
-        </div>
+        </div> */}
       </div>
   
       {/* Event section title */}
@@ -153,7 +162,7 @@ const MainPage = () => {
                       }}
                       className="add-event-button"
                     >
-                      Записаться
+                      Добавить в корзину
                     </button>
                   </div>
   

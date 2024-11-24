@@ -13,27 +13,21 @@ const Breadcrumbs = () => {
   };
 
   return (
-    <nav className="breadcrumbs">
-      <span style={{ color: '#006CDC' }}>Главная</span>
+    <nav className="breadcrumbs mt-4">
+      <Link to="/" style={{ color: '#006CDC' }}>Главная</Link>
       {pathnames.map((pathname, index) => {
         const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
 
-        // Проверяем, является ли pathname числом или равен 'null'
         const isNumber = !isNaN(pathname) || pathname === 'null';
 
-        // Если это число или 'null', пропускаем
         if (isNumber) return null;
 
-        const isLast = index === pathnames.length - 1;
+        const breadcrumbText = breadcrumbsMapping[pathname] || pathname;
 
         return (
           <span key={routeTo}>
-            {'>'} {/* Разделитель */}
-            {(
-              <span style={{ color: '#006CDC' }}> {/* Некликаемый элемент с тем же цветом */}
-                {breadcrumbsMapping[pathname] || pathname}
-              </span>
-            )}
+            {' > '} {/* Разделитель */}
+            <Link to={routeTo} style={{ color: '#006CDC' }}>{breadcrumbText}</Link>
           </span>
         );
       })}

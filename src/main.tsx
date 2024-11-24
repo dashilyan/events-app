@@ -23,6 +23,10 @@ const router = createBrowserRouter([
   {
     path: '/events/:eventId',
     element: <EventDescription />
+  },
+  {
+    path: '/menu',
+    element: <Breadcrumbs />
   }
 ]);
 

@@ -434,7 +434,7 @@ a {
   height:2em;
   background-color: #006CDC;
   border-radius: 0.625em; /* 10px */
-  font-size: 18px; /* 16px */
+  font-size: 18px;
   font-family: ALS Sector, Regular;
   color: #ffffff;
   display: flex;
@@ -453,4 +453,9 @@ a {
   text-decoration: none;
   padding: 10px 15px;
   transition: background-color 0.3s;
+}
+.breadcrumbs{
+  color:#006CDC;
+  font-size: 18px; 
+  font-family: ALS Sector, Regular;
 }
