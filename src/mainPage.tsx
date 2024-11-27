@@ -3,6 +3,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from './navbar';
 
+import { useSelector, useDispatch } from 'react-redux';
+import { setEvents, setFilteredEvents, setInputValue, setCurrentVisitId, setCurrentCount } from './reduxSlices/eventSlice';
+
 const mockEvents = [
   {
     pk: 1,
@@ -33,12 +36,15 @@ const mockEvents = [
 const defaultImageUrl = 'http://192.168.56.101:9000/static/8.png';
 
 const MainPage = () => {
-  const [inputValue, setInputValue] = useState('');
-  const [events, setEvents] = useState(mockEvents);
-  const [filteredEvents, setFilteredEvents] = useState(mockEvents);
-  const [visitId, setVisitId] = useState(1); // Пример идентификатора заявки
-  const [cartCount, setCartCount] = useState(0); // Число событий в корзине
-  const navigate = useNavigate();
+  // const [inputValue, setInputValue] = useState('');
+  // const [events, setEvents] = useState(mockEvents);
+  // const [filteredEvents, setFilteredEvents] = useState(mockEvents);
+  // const [visitId, setVisitId] = useState(1); // Пример идентификатора заявки
+  // const [cartCount, setCartCount] = useState(0); // Число событий в корзине
+  // const navigate = useNavigate();
+
+  const { inputValue, events, filteredEvents} = useSelector((state) => state.events);
+  const dispatch = useDispatch();
   
   useEffect(() => {
     const fetchEvents = async () => {
@@ -47,21 +53,25 @@ const MainPage = () => {
         const eventsData = await response.json();
         const filteredData = eventsData.filter(item => item.pk !== undefined);
         const visitData = eventsData.find(item => item.visit);
-        setEvents(filteredData);
-        setFilteredEvents(filteredData);
-        setVisitId(visitData?.visit?.pk || null);
-        setCartCount(visitData?.visit?.cart_count || 0);
+        // setEvents(filteredData);
+        // setFilteredEvents(filteredData);
+        // setVisitId(visitData?.visit?.pk || null);
+        // setCartCount(visitData?.visit?.cart_count || 0);
+        dispatch(setEvents(filteredData));
+        dispatch(setCurrentVisitId(visitData?.request?.pk || null));
+        dispatch(setCurrentCount(visitData?.request?.cart_amount || 0));
       } catch (error) {
         console.error('Ошибка при загрузке данных мероприятий:', error);
-        setEvents(mockEvents);
-        setFilteredEvents(mockEvents);
-        const visitData = mockEvents.find(item => item.visit);
-        setVisitId(visitData?.visit?.pk || null);
-        setCartCount(visitData?.visit?.cart_count || 0);
+        // setEvents(mockEvents);
+        // setFilteredEvents(mockEvents);
+        // const visitData = mockEvents.find(item => item.visit);
+        // setVisitId(visitData?.visit?.pk || null);
+        // setCartCount(visitData?.visit?.cart_count || 0);
+        dispatch(setEvents(mockEvents));
       }
     };
     fetchEvents();
-  }, []);
+  },[]);
 
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
@@ -69,18 +79,18 @@ const MainPage = () => {
       const response = await fetch(`/api/events/?event_type=${inputValue}`);
       const result = await response.json();
       const filteredResult = result.filter(item => item.pk !== undefined);
-      setFilteredEvents(filteredResult);
+      // setFilteredEvents(filteredResult);
+      dispatch(setEvents(filteredResult));
     } catch (error) {
-      try{
         e.preventDefault();
-        const filtered = events.filter((event) =>
-        event.event_name.toLowerCase().includes(inputValue.toLowerCase())
+        const filtered = events.filter(event =>
+        event.event_type.toLowerCase().includes(inputValue.toLowerCase())
         );
         setFilteredEvents(filtered);
-      }
-      catch(error){
+
       console.error('Ошибка при выполнении поиска:', error);
-      }
+      dispatch(setEvents(filtered));
+
     }
   };
 
@@ -101,25 +111,17 @@ const MainPage = () => {
       {/* Search bar and cart */}
       <div className="menu row">
         <div className="search">
-          <form 
-          onSubmit={handleSearchSubmit}
-            // onSubmit={(e) => {
-            //   e.preventDefault();
-            //   const filtered = events.filter((event) =>
-            //     event.event_name.toLowerCase().includes(inputValue.toLowerCase())
-            //   );
-            //   setFilteredEvents(filtered);
-            // }}
-            className="search-form"
-          >
+          <form onSubmit={handleSearchSubmit} className="search-form">
           <div className="search-bar">
           <input
               type="text"
-              name="event_name"
+              name="event_type"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              // onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => dispatch(setInputValue(e.target.value))}
+
               className="form-control col-auto p-0"
-              placeholder="Поиск мероприятий"
+              placeholder="Поиск мероприятий по типу"
               style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
             />
           </div>
@@ -157,7 +159,7 @@ const MainPage = () => {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        setCartCount(cartCount+1);
+                        // setCartCount(cartCount+1);
                         // handleAddEvent(event.pk)
                       }}
                       className="add-event-button"

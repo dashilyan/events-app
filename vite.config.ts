@@ -3,16 +3,15 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  server: { 
-    host: '192.168.56.101',
-    port: 3000,
+  plugins: [react()],
+  base: "/events-app", // Замените RepoName на имя вашего репозитория
+  server: {
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8000",
+        target: "http://192.168.56.101:8080",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, "/"),
       },
     },
   },
-  plugins: [react()],
-})
+});

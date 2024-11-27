@@ -1,8 +1,11 @@
 import React from 'react';
 import './App.css';  // Стили
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainPage from './mainPage';  // Импортируем компонент
-import VisitPage from './visitPage';
 import EventDescription from './descriptionPage';
+import HomePage from './homePage.tsx';
+import { Provider } from 'react-redux';
+import storage from './reduxSlices/storage.tsx';
 
 function App() {
   const event = {
@@ -44,8 +47,16 @@ function App() {
       //<VisitPage visitId={data.visitId} currentEvents={data.currentEvents} />
       //<MainPage />
 
-      <EventDescription event={event} />
+      // <EventDescription event={event} />
+      <BrowserRouter basename="/RepoName"> {/* RepoName - название вашего репозитория */}
+      <Routes>
+        <Route path="/" index element={<HomePage />} />
+        <Route path="/events" element={<MainPage />} />
+        <Route path="/events/:eventId" element={<EventDescription />} />
+      </Routes>
+    </BrowserRouter>
   );
+
 }
 
 export default App;

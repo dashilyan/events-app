@@ -9,6 +9,9 @@ import './index.css';
 import './App.css';
 import Breadcrumbs from './breadcrumbs.tsx';
 
+import { Provider } from 'react-redux';
+import storage from './reduxSlices/storage.tsx';
+
 
 // Создаем маршрутизатор с путями для всех страниц
 const router = createBrowserRouter([
@@ -32,7 +35,12 @@ const router = createBrowserRouter([
 
 // Рендерим приложение с провайдером роутера
 createRoot(document.getElementById('root')!).render(
+  // <StrictMode>
+  //   <RouterProvider router={router} />
+  // </StrictMode>
   <StrictMode>
+  <Provider store={storage}>
     <RouterProvider router={router} />
-  </StrictMode>
+  </Provider>
+</StrictMode>
 );
