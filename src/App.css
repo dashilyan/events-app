@@ -198,17 +198,6 @@ header {
   box-sizing: border-box;
 }
 
-/* .event-card {
-  min-width: 6.25em; 
-  height: 18.125em; 
-  border-radius: 1.25em; 
-  background-color: #F7FAFE;
-  box-shadow: 0px 0px 3.125em 1em #DDEBFA, inset 0 0 0 0.1875em #DEECFA;
-
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
-} */
 .event-card {
   min-width: 100px;
   height: 290px;
@@ -458,4 +447,30 @@ a {
   color:#006CDC;
   font-size: 18px; 
   font-family: ALS Sector, Regular;
+}
+
+@media (max-width: 500px){
+  .events{
+    margin: 0.5em 2em;
+    font-size: 24px;
+  }
+  a {
+    flex-direction: column;
+  }
+  .event-card{
+    height: fit-content;
+  }
+  .event-text{
+    width: auto;
+  }
+  .event-text .col-md-4{
+    width: 100%;
+    margin: 1em;
+  }
+  .event-img{
+    width: auto;
+  }
+  .event-img .col-md-8{
+    width:100%;
+  }
 }

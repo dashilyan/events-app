@@ -98,13 +98,13 @@ const MainPage = () => {
     <div>
       {/* BMSTU header */}
       <header className='menu'>
-        <a href="/">
+        <Link to="/">
           <div className="bmstu">
               <div className="bmstu-image"><img src="http://192.168.56.101:9000/static/bmstu.png"/></div>
               <div className="bmstu-line"></div>
               <div className="bmstu-text">МОСКОВСКИЙ ГОСУДАРСТВЕННЫЙ ТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ ИМ Н. Э. БАУМАНА</div>
           </div>
-        </a>
+        </Link>
         <Navbar />
       </header>
   
@@ -129,7 +129,7 @@ const MainPage = () => {
           </form>
         </div>
         {/* <div className="cart">
-          <a href={`/visit/${visitId}`}>
+          <Link to={`/visit/${visitId}`}>
             <div className="cart-icon">
               <img
                 src="http://192.168.56.101:9000/static/request-icon.png"
@@ -137,7 +137,7 @@ const MainPage = () => {
               />
             </div>
             <div className="cart-count">{cartCount}</div>
-          </a>
+          </Link>
         </div> */}
       </div>
   
@@ -150,7 +150,7 @@ const MainPage = () => {
           {filteredEvents.map((event) => (
             <div key={event.pk} className="col">
               <div className="event-card d-flex">
-                <a href={`/events/${event.pk}`} className="d-flex w-100">
+                <Link to={`/events/${event.pk}`} className="d-flex w-100">
                   {/* Text Section */}
                   <div className="col-md-4 event-text">
                     <h1>{event.event_name}</h1>
@@ -176,7 +176,7 @@ const MainPage = () => {
                       className="img-fluid h-100 w-100 object-cover"
                     />
                   </div>
-                </a>
+                </Link>
               </div>
             </div>
           ))}

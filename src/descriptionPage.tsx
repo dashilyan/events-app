@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from './navbar';
 import Breadcrumbs from './breadcrumbs';
@@ -83,13 +83,13 @@ const EventDescription = () => {
     <div>
       {/* BMSTU header */}
       <header className='menu'>
-      <a href="/">
+      <Link to="/">
         <div className="bmstu">
             <div className="bmstu-image"><img src="http://192.168.56.101:9000/static/bmstu.png"/></div>
             <div className="bmstu-line"></div>
             <div className="bmstu-text">МОСКОВСКИЙ ГОСУДАРСТВЕННЫЙ ТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ ИМ Н. Э. БАУМАНА</div>
         </div>
-      </a>
+      </Link>
       <Navbar />
       </header>
       <div className="container">

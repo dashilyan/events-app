@@ -12,6 +12,7 @@ import Breadcrumbs from './breadcrumbs.tsx';
 import { Provider } from 'react-redux';
 import storage from './reduxSlices/storage.tsx';
 
+import {registerSW} from "virtual:pwa-register";
 
 // Создаем маршрутизатор с путями для всех страниц
 const router = createBrowserRouter([
@@ -31,16 +32,21 @@ const router = createBrowserRouter([
     path: '/menu',
     element: <Breadcrumbs />
   }
-]);
+], { basename: '/events-app' });
+
+if ("serviceWorker" in navigator) {
+  registerSW()
+  window.addEventListener("load", function() {
+    navigator.serviceWorker
+      .register("/serviceWorker.js")
+      .then(res => console.log("service worker registered"))
+      .catch(err => console.log("service worker not registered", err))
+  })
+}
 
 // Рендерим приложение с провайдером роутера
 createRoot(document.getElementById('root')!).render(
-  // <StrictMode>
-  //   <RouterProvider router={router} />
-  // </StrictMode>
   <StrictMode>
-  <Provider store={storage}>
-    <RouterProvider router={router} />
-  </Provider>
-</StrictMode>
+    <App/>
+  </StrictMode>
 );
