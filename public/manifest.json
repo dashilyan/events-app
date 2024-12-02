@@ -1,7 +1,7 @@
 {
     "name": "Мероприятия музея МГТУ",
     "short_name": "Музей МГТУ",
-    "start_url": "/events-app/",
+    "start_url": "/events-app",
     "display": "standalone",
     "background_color": "#fdfdfd",
     "theme_color": "#db4938",

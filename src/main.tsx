@@ -12,8 +12,6 @@ import Breadcrumbs from './breadcrumbs.tsx';
 import { Provider } from 'react-redux';
 import storage from './reduxSlices/storage.tsx';
 
-import {registerSW} from "virtual:pwa-register";
-
 // Создаем маршрутизатор с путями для всех страниц
 const router = createBrowserRouter([
   {
@@ -35,10 +33,9 @@ const router = createBrowserRouter([
 ], { basename: '/events-app' });
 
 if ("serviceWorker" in navigator) {
-  registerSW()
   window.addEventListener("load", function() {
     navigator.serviceWorker
-      .register("/serviceWorker.js")
+      .register("/events-app/serviceWorker.js")
       .then(res => console.log("service worker registered"))
       .catch(err => console.log("service worker not registered", err))
   })
