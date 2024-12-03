@@ -135,7 +135,7 @@ const MainPage = () => {
       </div>
   
       {/* Search bar and cart */}
-      <div className="menu p-0">
+      <div className="menu p-0 d-flex">
         <div className="search">
           <form onSubmit={handleSearchSubmit} className="search-form">
           <div className="search-bar">
