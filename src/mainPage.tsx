@@ -52,28 +52,28 @@ const MainPage = () => {
           const filteredData = eventsData.filter(item => item.pk !== undefined);
           dispatch(setEvents(filteredData));
         } else {
-          try {
             const response = await fetch(`/api/events/?event_type=${inputValue}`);
             const result = await response.json();
             const filteredResult = result.filter(item => item.pk !== undefined);
             // setFilteredEvents(filteredResult);
             dispatch(setEvents(filteredResult));
-          } catch (error) {
-              const filtered = events.filter(event =>
-              event.event_type.toLowerCase().includes(inputValue.toLowerCase())
-              );
-              setFilteredEvents(filtered);
-      
-            console.error('Ошибка при выполнении поиска:', error);
-            dispatch(setEvents(filtered));
-          }
         }
         const visitData = eventsData.find(item => item.visit);
         dispatch(setCurrentVisitId(visitData?.request?.pk || null));
         dispatch(setCurrentCount(visitData?.request?.cart_amount || 0));
       } catch (error) {
         console.error('Ошибка при загрузке данных мероприятий:', error);
-        dispatch(setEvents(mockEvents));
+        if (inputValue === ''){
+          dispatch(setEvents(mockEvents));
+        } else{
+          const filtered = events.filter(event =>
+            event.event_type.toLowerCase().includes(inputValue.toLowerCase())
+            );
+            setFilteredEvents(filtered);
+    
+          console.error('Ошибка при выполнении поиска:', error);
+          dispatch(setEvents(filtered));
+        }
       }
     };
     fetchEvents();
@@ -125,11 +125,13 @@ const MainPage = () => {
           </Offcanvas.Header>
           <Offcanvas.Body className="" style={{backgroundColor:"#006CDC"}}> {/* Changed background */}
             <Navbar></Navbar>
+            <Link to="/">
             <div className="bmstu">
               <div className="bmstu-image"><img src="/events-app/mock_img/bmstu-white.png"/></div>
               <div className="bmstu-line"></div>
               <div className="bmstu-text">МОСКОВСКИЙ ГОСУДАРСТВЕННЫЙ ТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ ИМ Н. Э. БАУМАНА</div>
-          </div>
+            </div>
+          </Link>
           </Offcanvas.Body>
         </Offcanvas>
       </div>

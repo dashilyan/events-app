@@ -35,7 +35,7 @@ export default function HomePage() {
           </Offcanvas.Header>
           <Offcanvas.Body className="" style={{backgroundColor:"#006CDC"}}> {/* Changed background */}
             <Navbar></Navbar>
-            <div className="bmstu">
+            <div className="bmstu w-100">
               <div className="bmstu-image"><img src="/events-app/mock_img/bmstu-white.png"/></div>
               <div className="bmstu-line"></div>
               <div className="bmstu-text">МОСКОВСКИЙ ГОСУДАРСТВЕННЫЙ ТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ ИМ Н. Э. БАУМАНА</div>
@@ -50,7 +50,7 @@ export default function HomePage() {
         <p className="home-description">
           Данный ресурс предназначен для регистрации на мероприятия музея МГТУ.
         </p>
-        <Link to="/events" className="home-button">Список мероприятий</Link>
+        <Link to="/events" className="home-button col-10">Список мероприятий</Link>
       </main>
     </div>
   );
