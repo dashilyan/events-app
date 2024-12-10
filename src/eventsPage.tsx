@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from './navbar';
 import { Offcanvas } from 'react-bootstrap';
-
+import Breadcrumbs from './breadcrumbs';
 import { useSelector, useDispatch } from 'react-redux';
 import { setEvents, setFilteredEvents, setInputValue, setCurrentVisitId, setCurrentCount } from './reduxSlices/eventSlice';
 
@@ -36,7 +36,7 @@ const mockEvents = [
 
 const defaultImageUrl = 'mock_img/8.png';
 
-const MainPage = () => {
+const EventsPage = () => {
   const { inputValue, events, filteredEvents} = useSelector((state) => state.events);
   const dispatch = useDispatch();
   const [show, setShow] = useState(false);
@@ -137,6 +137,10 @@ const MainPage = () => {
       </div>
   
       {/* Search bar and cart */}
+      <div className='container'>
+        <Breadcrumbs></Breadcrumbs>
+      </div>
+
       <div className="menu p-0 d-flex">
         <div className="search">
           <form onSubmit={handleSearchSubmit} className="search-form">
@@ -157,7 +161,7 @@ const MainPage = () => {
           </form>
         </div>
       </div>
-  
+
       {/* Event section title */}
       <div className="events">Мероприятия музея МГТУ</div>
   
@@ -172,7 +176,7 @@ const MainPage = () => {
                     <h1>{event.event_name}</h1>
                     <p>{event.event_type}</p>
                     <p>{event.duration}</p>
-                    <button
+                    {/* <button
                       onClick={(e) => {
                         e.preventDefault();
                         // setCartCount(cartCount+1);
@@ -181,7 +185,7 @@ const MainPage = () => {
                       className="add-event-button"
                     >
                       Добавить в корзину
-                    </button>
+                    </button> */}
                   </div>
   
                   {/* Image Section */}
@@ -228,4 +232,4 @@ const MainPage = () => {
   );  
 };
   
-export default MainPage;
+export default EventsPage;

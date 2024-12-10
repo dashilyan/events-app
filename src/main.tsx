@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-import MainPage from './mainPage';
+import EventsPage from './eventsPage';
 import EventDescription from './descriptionPage';
 import HomePage from './homePage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -20,15 +20,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/events',
-    element: <MainPage />
+    element: <EventsPage />
   },
   {
     path: '/events/:eventId',
     element: <EventDescription />
-  },
-  {
-    path: '/menu',
-    element: <Breadcrumbs />
   }
 ], { basename: '/events-app' });
 
