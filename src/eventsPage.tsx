@@ -5,7 +5,7 @@ import Navbar from './navbar';
 import { Offcanvas } from 'react-bootstrap';
 import Breadcrumbs from './breadcrumbs';
 import { useSelector, useDispatch } from 'react-redux';
-import { setEvents, setFilteredEvents, setInputValue, setCurrentVisitId, setCurrentCount } from './reduxSlices/eventSlice';
+import { setEvents, setFilteredEvents, setInputValue, setCurrentVisitId, setCurrentCount, fetchEvents } from './reduxSlices/eventSlice';
 import { api } from './api';
 import Cookies from 'js-cookie';
 
@@ -70,7 +70,6 @@ const EventsPage = () => {
       const visitData = response.find(item => item.visit);
       dispatch(setCurrentVisitId(visitData?.visit?.pk || null));
       dispatch(setCurrentCount(visitData?.visit?.events_count || 0));
-
     } catch (err: any) {
         console.error('Ошибка при добавлении события:', err);
         setError('Ошибка при добавлении события');
@@ -120,7 +119,10 @@ const EventsPage = () => {
     };
     fetchEvents();
   },[dispatch]);
-
+  // const handleSearchSubmit = (e) => {
+  //   e.preventDefault();
+  //   dispatch(fetchThreats({ inputValue }));
+  // };
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
     try {
