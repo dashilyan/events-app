@@ -7,7 +7,11 @@ import HomePage from './homePage.tsx';
 import Breadcrumbs from './breadcrumbs.tsx';
 import { Provider } from 'react-redux';
 import storage from './reduxSlices/storage.tsx';
-
+import AuthPage from './authPage.tsx';
+import VisitPage from './visitPage.tsx';
+import VisitsTable from './visitsTablePage.tsx';
+import LKSPage from './lksPage.tsx';
+import RegPage from './regPage.tsx';
 function App() {
 
   useEffect(() => {
@@ -39,7 +43,27 @@ function App() {
     {
       path: '/events/:eventId',
       element: <EventDescription />
-    }
+    },
+    {
+      path: '/auth',
+      element: <AuthPage />
+    },
+    {
+      path: '/visit/:visitId',
+      element: <VisitPage />
+    },
+    {
+      path: '/visits',
+      element: <VisitsTable />
+    },
+    {
+      path: '/lks',
+      element: <LKSPage />
+    },
+    {
+      path: '/reg',
+      element: <RegPage />
+    }    
   ], { basename: '/events-app' });
 
   if ("serviceWorker" in navigator) {

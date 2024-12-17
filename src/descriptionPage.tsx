@@ -117,7 +117,7 @@ const EventDescription = () => {
           </Offcanvas.Body>
         </Offcanvas>
       </div>
-    
+
       <div className="container">
       <Breadcrumbs></Breadcrumbs>
       <div className="event-card-long row my-4" key={event.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
@@ -144,7 +144,7 @@ const EventDescription = () => {
           <img
             src={event.img_url || defaultImageUrl}
             alt={event.event_name}
-            style={{ width: '100%', objectFit: 'cover',borderTopRightRadius:'10px', borderBottomRightRadius: '10px' }}
+            style={{ width: '100%', objectFit: 'cover',borderTopRightRadius:'10px', borderTopLeftRadius: '10px' }}
           />
         </div>
         

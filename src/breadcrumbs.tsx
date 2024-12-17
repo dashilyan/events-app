@@ -14,7 +14,12 @@ const Breadcrumbs = () => {
   const breadcrumbsMapping = {
     '': 'Главная',
     'events': 'Мероприятия',
-    'description': 'Описание'
+    'description': 'Описание',
+    'visit':'Посещение',
+    'visits':'Таблица посещений',
+    'lks':'Личный кабинет',
+    'auth':'Вход',
+    'reg':'Регистрация'
   };
   const [eventNames, setEventNames] = useState({}); // Состояние для хранения имен мероприятий
 
@@ -36,7 +41,6 @@ const Breadcrumbs = () => {
       setEventNames(newEventNames);
     }
     }
-
     fetchEventNames();
   }, []);
 
@@ -47,14 +51,23 @@ const Breadcrumbs = () => {
       {pathnames.map((pathname, index) => {
         const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
         let breadcrumbText = breadcrumbsMapping[pathname] || pathname;
-
-        if (index === pathnames.length - 1 && !isNaN(parseInt(pathname))) {
+        let separator = ' > '; // Initialize separator
+        const containsVisit = pathnames.includes('visit');
+        const isLastNumber = index === pathnames.length - 1 && !isNaN(parseInt(pathname));
+    
+        if (containsVisit && isLastNumber) {
+          separator = ' ';
+          breadcrumbText = ""; // or some other appropriate text, e.g., '...' or null.
+        } else if (index === pathnames.length - 1 && !isNaN(parseInt(pathname)) && pathnames[index-1] !== 'visit') {
           breadcrumbText = eventNames[parseInt(pathname)] || `Мероприятие ${pathname}`;
         }
+        // else if ((index === pathnames.length - 1 && !isNaN(parseInt(pathname)) && pathnames[index-1] == 'visit') || pathnames[index] == 'visit') {
+        //   breadcrumbText="";
+        // }
 
         return (
           <span key={routeTo}>
-            {' > '}
+            {separator}
             <Link to={routeTo} style={{ color: '#006CDC' }}>{breadcrumbText}</Link>
           </span>
         );

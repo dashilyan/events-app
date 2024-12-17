@@ -6,6 +6,8 @@ import { Offcanvas } from 'react-bootstrap';
 import Breadcrumbs from './breadcrumbs';
 import { useSelector, useDispatch } from 'react-redux';
 import { setEvents, setFilteredEvents, setInputValue, setCurrentVisitId, setCurrentCount } from './reduxSlices/eventSlice';
+import { api } from './api';
+import Cookies from 'js-cookie';
 
 const mockEvents = [
   {
@@ -37,20 +39,53 @@ const mockEvents = [
 const defaultImageUrl = 'mock_img/8.png';
 
 const EventsPage = () => {
-  const { inputValue, events, filteredEvents} = useSelector((state) => state.events);
+  const { inputValue, events, filteredEvents, currentVisitId, currentCount} = useSelector((state) => state.events);
+  const {isAuthenticated} = useSelector((state)=> state.auth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const handleAddEvent = async (eventId) => {
+    console.log(eventId);
+    setError('');
+    try {
+      const csrfToken = Cookies.get('csrftoken');
+
+      await api.events.signupCreate(eventId,{}, {
+          headers: {
+            'X-CSRFToken': csrfToken,
+          },
+        });
+
+      // После добавления угрозы обновляем список
+      const response = await api.events.eventsList();
+      const eventsData = response.data.filter((item) => item.pk !== undefined);
+      dispatch(setEvents(eventsData));
+
+      // Проверяем наличие заявки
+      const visitData = response.find(item => item.visit);
+      dispatch(setCurrentVisitId(visitData?.visit?.pk || null));
+      dispatch(setCurrentCount(visitData?.visit?.events_count || 0));
+
+    } catch (err: any) {
+        console.error('Ошибка при добавлении события:', err);
+        setError('Ошибка при добавлении события');
+    }
+  };
+
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await fetch('/api/events/');
         const eventsData = await response.json();
         if (inputValue === ''){
-          const filteredData = eventsData.filter(item => item.pk !== undefined);
-          dispatch(setEvents(filteredData));
+          // const filteredData = eventsData.filter(item => item.pk !== undefined);
+          dispatch(setEvents(eventsData));
         } else {
             const response = await fetch(`/api/events/?event_type=${inputValue}`);
             const result = await response.json();
@@ -59,14 +94,21 @@ const EventsPage = () => {
             dispatch(setEvents(filteredResult));
         }
         const visitData = eventsData.find(item => item.visit);
-        dispatch(setCurrentVisitId(visitData?.request?.pk || null));
-        dispatch(setCurrentCount(visitData?.request?.cart_amount || 0));
+        if (visitData?.visit?.pk) {
+          dispatch(setCurrentVisitId(visitData.visit.pk));
+          dispatch(setCurrentCount(visitData.visit.events_count));
+        } else {
+          dispatch(setCurrentVisitId(null));
+          dispatch(setCurrentCount(0));
+        }
+        // dispatch(setCurrentVisitId(visitData.visit.pk || null));
+        // dispatch(setCurrentCount(visitData.visit.events_count || 0));
       } catch (error) {
         console.error('Ошибка при загрузке данных мероприятий:', error);
         if (inputValue === ''){
           dispatch(setEvents(mockEvents));
         } else{
-          const filtered = events.filter(event =>
+          const filtered = mockEvents.filter(event =>
             event.event_type.toLowerCase().includes(inputValue.toLowerCase())
             );
             setFilteredEvents(filtered);
@@ -77,25 +119,36 @@ const EventsPage = () => {
       }
     };
     fetchEvents();
-  },[]);
+  },[dispatch]);
 
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (!inputValue){
+        const response = await fetch(`/api/events/?event_type=${inputValue}`);
+        const result = await response.json();
+        dispatch(setEvents(result));
+      }
+      else{
       const response = await fetch(`/api/events/?event_type=${inputValue}`);
       const result = await response.json();
       const filteredResult = result.filter(item => item.pk !== undefined);
       // setFilteredEvents(filteredResult);
       dispatch(setEvents(filteredResult));
+      }
     } catch (error) {
+      if (inputValue === ''){
+        dispatch(setEvents(mockEvents));
+      }
+      else{
         e.preventDefault();
-        const filtered = events.filter(event =>
+        const filtered = mockEvents.filter(event =>
         event.event_type.toLowerCase().includes(inputValue.toLowerCase())
         );
         setFilteredEvents(filtered);
-
-      console.error('Ошибка при выполнении поиска:', error);
-      dispatch(setEvents(filtered));
+        console.error('Ошибка при выполнении поиска:', error);
+        dispatch(setEvents(filtered));
+      }
     }
   };
 
@@ -141,7 +194,8 @@ const EventsPage = () => {
         <Breadcrumbs></Breadcrumbs>
       </div>
 
-      <div className="menu p-0 d-flex">
+      {/* <div className="menu p-0 d-flex"> */}
+      <div className="container d-flex justify-content-between">
         <div className="search">
           <form onSubmit={handleSearchSubmit} className="search-form">
           <div className="search-bar">
@@ -160,6 +214,24 @@ const EventsPage = () => {
             <input type="submit" value="" className="search-button" />
           </form>
         </div>
+              {isAuthenticated ? (
+                <div style={{position: 'relative'}}>
+                  <button
+                  type="button"
+                  className={`cart ${currentVisitId  ? 'cart-1' : 'cart-2'}`}
+                  style={{ marginLeft: '10px' }}
+                  disabled={currentVisitId == null}
+                  onClick={() => currentVisitId && navigate(`/visit/${currentVisitId}`)}>
+                    <div style={{ display: 'flex', alignItems: 'center'}}>
+                        <img src={'./mock_img/cart-icon-active.png'} alt="Cart Icon" className='cart-icon' />
+                        {/* <div className='cart-count'>{currentCount}</div> */}
+                    </div>
+                </button>
+                <div className='cart-count'>{currentCount}</div>
+                </div>
+              ) : (
+                  <span></span>
+              )}
       </div>
 
       {/* Event section title */}
@@ -176,16 +248,16 @@ const EventsPage = () => {
                     <h1>{event.event_name}</h1>
                     <p>{event.event_type}</p>
                     <p>{event.duration}</p>
-                    {/* <button
+                    <button
                       onClick={(e) => {
                         e.preventDefault();
-                        // setCartCount(cartCount+1);
-                        // handleAddEvent(event.pk)
+                        handleAddEvent(event.pk)
                       }}
                       className="add-event-button"
+                      style={{position:"absolute"}}
                     >
                       Добавить в корзину
-                    </button> */}
+                    </button>
                   </div>
   
                   {/* Image Section */}
@@ -214,8 +286,7 @@ const EventsPage = () => {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        // setCartCount(cartCount+1);
-                        // handleAddEvent(event.pk)
+                        handleAddEvent(event.pk)
                       }}
                       className="add-event-button"
                     >

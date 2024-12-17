@@ -1,0 +1,661 @@
+openapi: 3.0.0
+info:
+  title: Events API
+  version: 1.0.0
+paths:
+  /events/:
+    get:
+      summary: Получение списка событий
+      description: Получение списка событий (можно фильтровать по типу события через параметр 'event_type')
+      operationId: events-list
+      parameters:
+        - in: query
+          name: event_type
+          schema:
+            type: string
+          description: Фильтр по типу события (частичное совпадение)
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventsListSerializer'
+    post:
+      summary: Создание нового события
+      description: Создание нового события (только для персонала)
+      operationId: event-create
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventDetailSerializer'
+      responses:
+        '201':
+          description: Событие успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetailSerializer'
+        '400':
+          description: Неверный запрос
+        '403':
+          description: Доступ запрещен
+  /events/{pk}/:
+    get:
+      summary: Получение детальной информации о событии
+      description: Получение детальной информации о событии по ID
+      operationId: event-detail
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID события
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetailSerializer'
+    delete:
+      summary: Удаление события
+      description: Удаление события по ID (только для персонала)
+      operationId: event-delete
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID события
+      responses:
+        '204':
+          description: Событие успешно удалено
+        '403':
+          description: Доступ запрещен
+    put:
+      summary: Обновление события
+      description: Обновление события (частично) по ID (только для персонала)
+      operationId: event-update
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID события
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventDetailSerializer'
+      responses:
+        '200':
+          description: Событие успешно обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetailSerializer'
+        '400':
+          description: Неверный запрос
+        '403':
+          description: Доступ запрещен
+  events/signup/{pk}/:
+    post:
+      summary: Add an event to a user's draft visit
+      description: Adds a specific event to a user's draft visit. If no draft visit exists, a new visit is created.
+      parameters:
+        - name: pk
+          in: path
+          description: ID of the event to add
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                  description: The date of event visit
+                  example: "2024-03-15"
+      responses:
+        '200':
+          description: Event successfully added to the draft visit or event already exists in visit
+        '404':
+          description: Event not found
+  /events/image/:
+    post:
+      summary: Загрузка изображения для события
+      description: Загрузка изображения для события (только для персонала)
+      operationId: add-image
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddImageSerializer'
+      responses:
+        '201':
+          description: Image uploaded successfully
+        '400':
+          description: Bad Request
+        '403':
+          description: Доступ запрещен
+  /list-visits/:
+    get:
+        summary: Получение списка всех визитов, кроме черновиков
+        description: Получение списка всех визитов, кроме черновиков. Доступно как для персонала, так и для обычных пользователей. Персонал видит все визиты, а обычные пользователи - только свои.
+        operationId: list-visits-by-username
+        security:
+          - basicAuth: []
+        parameters:
+          - in: query
+            name: date
+            schema:
+              type: string
+              format: date
+            description: Фильтр по дате создания визита (формат ГГГГ-ММ-ДД)
+          - in: query
+            name: status
+            schema:
+              type: string
+            description: Фильтр по статусу визита
+        responses:
+          '200':
+            description: Успешный ответ
+            content:
+              application/json:
+                schema:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VisitSerializer'
+  /visit/{pk}/:
+    get:
+      summary: Получение деталей визита по ID
+      description: Получение деталей визита по ID (требуется аутентификация)
+      operationId: get-visit-by-id
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID визита
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitWithEventsSerializer'
+    put:
+      summary: Обновление визита
+      description: Обновление визита по ID (требуется аутентификация)
+      operationId: put-visit-by-id
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID визита
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutVisitSerializer'
+      responses:
+          '200':
+            description: Visit updated
+          '400':
+            description: Bad Request
+  /form-visit/{pk}/:
+    put:
+      summary: Формирование чернового визита
+      description: Формирование чернового визита (только для владельца визита)
+      operationId: form-visit-by-id
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID визита
+      responses:
+        '200':
+          description: Visit formed
+        '400':
+          description: Bad Request
+        '403':
+          description: Доступ запрещен
+  /moderate-visit/{pk}/:
+    put:
+      summary: Модерация визита (принятие/отклонение)
+      description: Модерация визита (принятие/отклонение) (только для персонала)
+      operationId: moderate-visit-by-id
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID визита
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptRequestSerializer'
+      responses:
+        '200':
+          description: Visit moderated
+        '400':
+          description: Bad Request
+        '403':
+            description: Доступ запрещен
+    delete:
+      summary: Удаление визита
+      description: Удаление визита (только для персонала)
+      operationId: delete-visit-by-id
+      security:
+          - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID визита
+      responses:
+        '200':
+          description: Visit deleted
+  /edit-event-visit/{pk}/:
+    put:
+      summary: Изменение даты или удаление события из визита
+      description: Изменение даты или удаление события из визита (только для персонала)
+      operationId: edit-event-in-visit
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID визита
+      requestBody:
+        required: true
+        content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  event_id:
+                     type: integer
+                     description: ID события в визите
+                  date:
+                     type: string
+                     format: date
+                     description: Новая дата для события в визите
+      responses:
+        '200':
+          description: Request updated
+        '400':
+          description: Bad Request
+        '403':
+          description: Доступ запрещен
+    delete:
+      summary: Удаление события из визита
+      description: Удаление события из визита (только для персонала)
+      operationId: delete-event-from-visit
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: pk
+          required: true
+          schema:
+            type: integer
+          description: ID визита
+      requestBody:
+         required: true
+         content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                   event_id:
+                      type: integer
+                      description: ID события для удаления из визита
+      responses:
+        '200':
+          description: Request updated
+        '400':
+          description: Bad Request
+        '403':
+          description: Доступ запрещен
+  /register/:
+    post:
+      summary: Регистрация нового пользователя
+      description: Регистрация нового пользователя
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationSerializer'
+      responses:
+        '201':
+            description: User registered
+        '400':
+            description: Bad Request
+  /profile/:
+    put:
+        summary: Обновление данных пользователя
+        description: Обновление данных текущего пользователя (требуется аутентификация)
+        operationId: profile
+        security:
+          - basicAuth: []
+        requestBody:
+          required: true
+          content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/UserUpdateSerializer'
+        responses:
+            '200':
+                description: User updated
+            '400':
+                description: Bad Request
+  /login/:
+    post:
+      summary: Вход пользователя
+      description: Вход пользователя
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthTokenSerializer'
+      responses:
+          '200':
+              description: User logged in
+          '400':
+              description: Bad Request
+  /logout/:
+    post:
+      summary: Выход пользователя
+      description: Выход пользователя (требуется аутентификация)
+      operationId: logout
+      security:
+          - basicAuth: []
+      responses:
+        '204':
+            description: Logout successful
+components:
+  securitySchemes:
+    basicAuth:
+      type: basic
+  schemas:
+    EventsListSerializer:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID события
+        title:
+          type: string
+          description: Название события
+        description:
+          type: string
+          description: Описание события
+        event_type:
+          type: string
+          description: Тип события
+        start_date:
+          type: string
+          format: date-time
+          description: Дата и время начала события
+        end_date:
+          type: string
+          format: date-time
+          description: Дата и время окончания события
+        location:
+          type: string
+          description: Место проведения события
+        image:
+           type: string
+           description: URL изображения события
+        visit:
+          type: object
+          description: Данные о черновике визита
+          nullable: true
+          properties:
+             id:
+              type: integer
+              description: ID визита
+             user_id:
+              type: integer
+              description: ID пользователя
+             status:
+               type: string
+               description: Статус визита
+             created_at:
+              type: string
+              format: date-time
+              description: Дата и время создания визита
+        events_count:
+             type: integer
+             description: Количество событий в визите
+
+    EventDetailSerializer:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID события
+        title:
+          type: string
+          description: Название события
+        description:
+          type: string
+          description: Описание события
+        event_type:
+          type: string
+          description: Тип события
+        start_date:
+          type: string
+          format: date-time
+          description: Дата и время начала события
+        end_date:
+          type: string
+          format: date-time
+          description: Дата и время окончания события
+        location:
+          type: string
+          description: Место проведения события
+        image:
+           type: string
+           description: URL изображения события
+    EventVisitSerializer:
+        type: object
+        properties:
+          event_id:
+            type: integer
+            description: ID события для добавления в визит
+          date:
+            type: string
+            format: date-time
+            description: Дата визита
+    AddImageSerializer:
+        type: object
+        properties:
+           event_id:
+             type: integer
+             description: ID события для добавления изображения
+           pic:
+             type: string
+             format: binary
+             description: Файл изображения
+    VisitSerializer:
+        type: object
+        properties:
+          id:
+             type: integer
+             description: ID визита
+          user_id:
+             type: integer
+             description: ID пользователя
+          status:
+             type: string
+             description: Статус визита
+          created_at:
+             type: string
+             format: date-time
+             description: Дата и время создания визита
+          formed_at:
+             type: string
+             format: date-time
+             nullable: true
+             description: Дата и время формирования визита
+    PutVisitSerializer:
+        type: object
+        properties:
+           status:
+             type: string
+             description: Статус визита
+           formed_at:
+             type: string
+             format: date-time
+             nullable: true
+             description: Дата и время формирования визита
+    VisitWithEventsSerializer:
+      type: object
+      properties:
+         id:
+            type: integer
+            description: ID визита
+         user_id:
+            type: integer
+            description: ID пользователя
+         status:
+            type: string
+            description: Статус визита
+         created_at:
+            type: string
+            format: date-time
+            description: Дата и время создания визита
+         formed_at:
+            type: string
+            format: date-time
+            nullable: true
+            description: Дата и время формирования визита
+         events:
+            type: array
+            description: Список событий в визите
+            items:
+              $ref: '#/components/schemas/EventsInVisitSerializer'
+    EventsInVisitSerializer:
+        type: object
+        properties:
+           id:
+             type: integer
+             description: ID события
+           title:
+             type: string
+             description: Название события
+           description:
+             type: string
+             description: Описание события
+           event_type:
+             type: string
+             description: Тип события
+           start_date:
+              type: string
+              format: date-time
+              description: Дата и время начала события
+           end_date:
+              type: string
+              format: date-time
+              description: Дата и время окончания события
+           location:
+              type: string
+              description: Место проведения события
+           image:
+              type: string
+              description: URL изображения события
+    AcceptRequestSerializer:
+        type: object
+        properties:
+            accept:
+              type: boolean
+              description: Принять или отклонить запрос
+    UserRegistrationSerializer:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Имя пользователя
+        password:
+          type: string
+          description: Пароль пользователя
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+    UserUpdateSerializer:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Имя пользователя
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+        first_name:
+          type: string
+          description: Имя пользователя
+        last_name:
+          type: string
+          description: Фамилия пользователя
+    AuthTokenSerializer:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Имя пользователя
+        password:
+          type: string
+          description: Пароль пользователя
