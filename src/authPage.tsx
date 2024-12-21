@@ -105,7 +105,7 @@ const AuthPage = () => {
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Имя пользователя"
-            autocomplete="off"
+            autoComplete="off"
             style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
           />
           </div>
@@ -118,7 +118,7 @@ const AuthPage = () => {
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Пароль"
-            autocomplete="off"
+            autoComplete="off"
             style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
           />
           </div>
@@ -142,7 +142,7 @@ const AuthPage = () => {
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Имя пользователя"
-            autocomplete="off"
+            autoComplete="off"
             style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
           />
           </div>
@@ -155,7 +155,7 @@ const AuthPage = () => {
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Пароль"
-            autocomplete="off"
+            autoComplete="off"
             style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
           />
           </div>

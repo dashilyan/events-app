@@ -201,13 +201,13 @@ const handleDeleteEvent = async (event_id) =>{
     if (response.ok) {
       // Успешно удалено
       setCurrentEvents(currentEvents.filter((event) => event.id !== event_id)); // Обновляем список угроз
-      await fetchVisit();
     } else {
       alert('Ошибка при удалении мероприятия');
     }
   } catch (error) {
     console.error('Ошибка:', error);
   }
+  fetchVisit();
 };
 
  if (errorMessage) {

@@ -6,7 +6,16 @@ import { useEffect, useState } from 'react';
 import Breadcrumbs from './breadcrumbs';
 import { api } from './api';
 import { useSelector, useDispatch } from 'react-redux';
-
+import { format, parseISO } from 'date-fns';
+const statusmapping = {
+  '': 'Главная',
+  'draft':'Черновик',
+  'formed':'Сформирована',
+  'declined':'Отклонена',
+  'accepted':'Одобрена',
+  'active':'В работе',
+  'ended':'Завершена',
+};
 const mockVisits = [
   {
    pk: '1',
@@ -163,10 +172,18 @@ export default function VisitsTable() {
                  {visits.map(visit => (
                      <tr key={visit.pk}>
                          <td>{visit.pk}</td>
-                         <td>{visit.status}</td>
-                         <td>{visit.created_at}</td>
-                         <td>{visit.formed_at}</td>
-                         <td>{visit.ended_at}</td>
+                         <td>{statusmapping[visit.status]}</td>
+                         <td>{format(parseISO(visit.created_at),'dd.MM.yyyy')}</td>
+                         {visit.formed_at ? (
+                          <td>{format(parseISO(visit.formed_at),'dd.MM.yyyy')}</td>
+                         ):(
+                          <td>{visit.formed_at}</td>
+                         )}
+                          {visit.ended_at ? (
+                          <td>{format(parseISO(visit.ended_at),'dd.MM.yyyy')}</td>
+                         ):(
+                          <td>{visit.ended_at}</td>
+                         )}
                          <td>{visit.group}</td>
                          <td>{visit.visitors}</td>
                          <td>

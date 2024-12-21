@@ -5,7 +5,7 @@ import Navbar from './navbar';
 import { Offcanvas } from 'react-bootstrap';
 import Breadcrumbs from './breadcrumbs';
 import { useSelector, useDispatch } from 'react-redux';
-import { setEvents, setFilteredEvents, setInputValue, setCurrentVisitId, setCurrentCount, fetchEvents } from './reduxSlices/eventSlice';
+import { setEvents, setFilteredEvents, setInputValue, setCurrentVisitId, setCurrentCount } from './reduxSlices/eventSlice';
 import { api } from './api';
 import Cookies from 'js-cookie';
 
@@ -48,7 +48,45 @@ const EventsPage = () => {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch('/api/events/');
+      const eventsData = await response.json();
+      if (inputValue === ''){
+        // const filteredData = eventsData.filter(item => item.pk !== undefined);
+        dispatch(setEvents(eventsData));
+      } else {
+          const response = await fetch(`/api/events/?event_type=${inputValue}`);
+          const result = await response.json();
+          const filteredResult = result.filter(item => item.pk !== undefined);
+          // setFilteredEvents(filteredResult);
+          dispatch(setEvents(filteredResult));
+      }
+      const visitData = eventsData.find(item => item.visit);
+      if (visitData?.visit?.pk) {
+        dispatch(setCurrentVisitId(visitData.visit.pk));
+        dispatch(setCurrentCount(visitData.visit.events_count));
+      } else {
+        dispatch(setCurrentVisitId(null));
+        dispatch(setCurrentCount(0));
+      }
+      // dispatch(setCurrentVisitId(visitData.visit.pk || null));
+      // dispatch(setCurrentCount(visitData.visit.events_count || 0));
+    } catch (error) {
+      console.error('Ошибка при загрузке данных мероприятий:', error);
+      if (inputValue === ''){
+        dispatch(setEvents(mockEvents));
+      } else{
+        const filtered = mockEvents.filter(event =>
+          event.event_type.toLowerCase().includes(inputValue.toLowerCase())
+          );
+          setFilteredEvents(filtered);
+  
+        console.error('Ошибка при выполнении поиска:', error);
+        dispatch(setEvents(filtered));
+      }
+    }
+  }
   const handleAddEvent = async (eventId) => {
     console.log(eventId);
     setError('');
@@ -61,7 +99,6 @@ const EventsPage = () => {
           },
         });
 
-      // После добавления угрозы обновляем список
       const response = await api.events.eventsList();
       const eventsData = response.data.filter((item) => item.pk !== undefined);
       dispatch(setEvents(eventsData));
@@ -74,55 +111,14 @@ const EventsPage = () => {
         console.error('Ошибка при добавлении события:', err);
         setError('Ошибка при добавлении события');
     }
+    fetchEvents();
   };
 
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('/api/events/');
-        const eventsData = await response.json();
-        if (inputValue === ''){
-          // const filteredData = eventsData.filter(item => item.pk !== undefined);
-          dispatch(setEvents(eventsData));
-        } else {
-            const response = await fetch(`/api/events/?event_type=${inputValue}`);
-            const result = await response.json();
-            const filteredResult = result.filter(item => item.pk !== undefined);
-            // setFilteredEvents(filteredResult);
-            dispatch(setEvents(filteredResult));
-        }
-        const visitData = eventsData.find(item => item.visit);
-        if (visitData?.visit?.pk) {
-          dispatch(setCurrentVisitId(visitData.visit.pk));
-          dispatch(setCurrentCount(visitData.visit.events_count));
-        } else {
-          dispatch(setCurrentVisitId(null));
-          dispatch(setCurrentCount(0));
-        }
-        // dispatch(setCurrentVisitId(visitData.visit.pk || null));
-        // dispatch(setCurrentCount(visitData.visit.events_count || 0));
-      } catch (error) {
-        console.error('Ошибка при загрузке данных мероприятий:', error);
-        if (inputValue === ''){
-          dispatch(setEvents(mockEvents));
-        } else{
-          const filtered = mockEvents.filter(event =>
-            event.event_type.toLowerCase().includes(inputValue.toLowerCase())
-            );
-            setFilteredEvents(filtered);
-    
-          console.error('Ошибка при выполнении поиска:', error);
-          dispatch(setEvents(filtered));
-        }
-      }
-    };
     fetchEvents();
   },[dispatch]);
-  // const handleSearchSubmit = (e) => {
-  //   e.preventDefault();
-  //   dispatch(fetchThreats({ inputValue }));
-  // };
+
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -250,18 +246,20 @@ const EventsPage = () => {
                     <h1>{event.event_name}</h1>
                     <p>{event.event_type}</p>
                     <p>{event.duration}</p>
+                    {isAuthenticated ? (
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         handleAddEvent(event.pk)
                       }}
                       className="add-event-button"
-                      style={{position:"absolute"}}
-                    >
+                      style={{position:"absolute"}}>
                       Добавить в корзину
                     </button>
+                  ):(
+                    <span></span>
+                  )}
                   </div>
-  
                   {/* Image Section */}
                   <div className="col-md-8 event-img">
                     <img
