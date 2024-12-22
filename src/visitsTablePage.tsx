@@ -7,6 +7,8 @@ import Breadcrumbs from './breadcrumbs';
 import { api } from './api';
 import { useSelector, useDispatch } from 'react-redux';
 import { format, parseISO } from 'date-fns';
+import { fetchVisits } from './reduxSlices/visitSlice'
+
 const statusmapping = {
   '': 'Главная',
   'draft':'Черновик',
@@ -70,55 +72,14 @@ export default function VisitsTable() {
 
   const [startDate, setStartDate] = useState('');
   const [status, setStatus] = useState('');
-
-  const [visits, setVisits] = useState([]);
-  const [loading, setLoading] = useState(true); // Состояние для анимации загрузки
-  const [error, setError] = useState(''); // Состояние для обработки ошибок
+  const { visits } = useSelector((state)=> state.visits);
   const { isAuthenticated } = useSelector((state) => state.auth); // Проверка на авторизацию
 
   useEffect(() => {
     if (isAuthenticated) {
-      const fetchVisits = async () => {
-        setLoading(true);
-        setError('');
-        try {
-          const response = await api.listVisits.listVisitsByUsername();
-          setVisits(response.data); // Сохраняем полученные заявки
-        } catch (error) {
-          console.error('Ошибка при выполнении запроса:', error);
-          setError('Ошибка при загрузке заявок');
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchVisits();
+      dispatch(fetchVisits());
     }
   }, [isAuthenticated]);
-
-  const fetchVisitsData = async (filters) => {
-    setLoading(true);
-    setError('');
-    try {
-      let response;
-      if (filters) {
-        response = await api.listVisits.listVisitsByUsername(filters);
-      } else {
-        response = await api.listVisits.listVisitsByUsername();
-      }
-
-      setVisits(response.data); // Сохраняем полученные заявки
-    } catch (error) {
-      console.error('Ошибка при выполнении запроса:', error);
-      setError('Ошибка при загрузке заявок');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleApplyFilters = () => {
-    fetchVisitsData({ date: startDate, status: status });
-  };
 
   return (
     <div>
@@ -169,7 +130,7 @@ export default function VisitsTable() {
                  </tr>
              </thead>
              <tbody>
-                 {visits.map(visit => (
+                 {visits?.map(visit => (
                      <tr key={visit.pk}>
                          <td>{visit.pk}</td>
                          <td>{statusmapping[visit.status]}</td>

@@ -5,7 +5,7 @@ import Navbar from './navbar';
 import { Offcanvas } from 'react-bootstrap';
 import Breadcrumbs from './breadcrumbs';
 import { useSelector, useDispatch } from 'react-redux';
-import { setEvents, setFilteredEvents, setInputValue, setCurrentVisitId, setCurrentCount } from './reduxSlices/eventSlice';
+import { setFilteredEvents, setInputValue, setCurrentCount, setCurrentVisitId, fetchEvents, addEvent } from './reduxSlices/eventSlice';
 import { api } from './api';
 import Cookies from 'js-cookie';
 
@@ -43,111 +43,24 @@ const EventsPage = () => {
   const {isAuthenticated} = useSelector((state)=> state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [error, setError] = useState('');
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  const fetchEvents = async () => {
-    try {
-      const response = await fetch('/api/events/');
-      const eventsData = await response.json();
-      if (inputValue === ''){
-        // const filteredData = eventsData.filter(item => item.pk !== undefined);
-        dispatch(setEvents(eventsData));
-      } else {
-          const response = await fetch(`/api/events/?event_type=${inputValue}`);
-          const result = await response.json();
-          const filteredResult = result.filter(item => item.pk !== undefined);
-          // setFilteredEvents(filteredResult);
-          dispatch(setEvents(filteredResult));
-      }
-      const visitData = eventsData.find(item => item.visit);
-      if (visitData?.visit?.pk) {
-        dispatch(setCurrentVisitId(visitData.visit.pk));
-        dispatch(setCurrentCount(visitData.visit.events_count));
-      } else {
-        dispatch(setCurrentVisitId(null));
-        dispatch(setCurrentCount(0));
-      }
-      // dispatch(setCurrentVisitId(visitData.visit.pk || null));
-      // dispatch(setCurrentCount(visitData.visit.events_count || 0));
-    } catch (error) {
-      console.error('Ошибка при загрузке данных мероприятий:', error);
-      if (inputValue === ''){
-        dispatch(setEvents(mockEvents));
-      } else{
-        const filtered = mockEvents.filter(event =>
-          event.event_type.toLowerCase().includes(inputValue.toLowerCase())
-          );
-          setFilteredEvents(filtered);
-  
-        console.error('Ошибка при выполнении поиска:', error);
-        dispatch(setEvents(filtered));
-      }
-    }
-  }
+
   const handleAddEvent = async (eventId) => {
-    console.log(eventId);
-    setError('');
-    try {
-      const csrfToken = Cookies.get('csrftoken');
-
-      await api.events.signupCreate(eventId,{}, {
-          headers: {
-            'X-CSRFToken': csrfToken,
-          },
-        });
-
-      const response = await api.events.eventsList();
-      const eventsData = response.data.filter((item) => item.pk !== undefined);
-      dispatch(setEvents(eventsData));
-
-      // Проверяем наличие заявки
-      const visitData = response.find(item => item.visit);
-      dispatch(setCurrentVisitId(visitData?.visit?.pk || null));
-      dispatch(setCurrentCount(visitData?.visit?.events_count || 0));
-    } catch (err: any) {
-        console.error('Ошибка при добавлении события:', err);
-        setError('Ошибка при добавлении события');
-    }
-    fetchEvents();
+    dispatch(addEvent(eventId));
+    dispatch(fetchEvents());
   };
 
 
   useEffect(() => {
-    fetchEvents();
-  },[dispatch]);
+    dispatch(fetchEvents());
+  },[dispatch, inputValue]);
 
-  const handleSearchSubmit = async (e) => {
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
-    try {
-      if (!inputValue){
-        const response = await fetch(`/api/events/?event_type=${inputValue}`);
-        const result = await response.json();
-        dispatch(setEvents(result));
-      }
-      else{
-      const response = await fetch(`/api/events/?event_type=${inputValue}`);
-      const result = await response.json();
-      const filteredResult = result.filter(item => item.pk !== undefined);
-      // setFilteredEvents(filteredResult);
-      dispatch(setEvents(filteredResult));
-      }
-    } catch (error) {
-      if (inputValue === ''){
-        dispatch(setEvents(mockEvents));
-      }
-      else{
-        e.preventDefault();
-        const filtered = mockEvents.filter(event =>
-        event.event_type.toLowerCase().includes(inputValue.toLowerCase())
-        );
-        setFilteredEvents(filtered);
-        console.error('Ошибка при выполнении поиска:', error);
-        dispatch(setEvents(filtered));
-      }
-    }
+    dispatch(fetchEvents(inputValue));
   };
 
   return (
@@ -195,15 +108,13 @@ const EventsPage = () => {
       {/* <div className="menu p-0 d-flex"> */}
       <div className="container d-flex justify-content-between">
         <div className="search">
-          <form onSubmit={handleSearchSubmit} className="search-form">
+          <form onSubmit={ handleSearchSubmit } className="search-form">
           <div className="search-bar">
           <input
               type="text"
               name="event_type"
               value={inputValue}
-              // onChange={(e) => setInputValue(e.target.value)}
               onChange={(e) => dispatch(setInputValue(e.target.value))}
-
               className="form-control col-auto p-0"
               placeholder="Поиск мероприятий по типу"
               style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
@@ -216,16 +127,19 @@ const EventsPage = () => {
                 <div style={{position: 'relative'}}>
                   <button
                   type="button"
-                  className={`cart ${currentVisitId  ? 'cart-1' : 'cart-2'}`}
+                  className={`cart ${currentVisitId  ? 'opacity-100' : 'opacity-20'}`}
                   style={{ marginLeft: '10px' }}
                   disabled={currentVisitId == null}
                   onClick={() => currentVisitId && navigate(`/visit/${currentVisitId}`)}>
                     <div style={{ display: 'flex', alignItems: 'center'}}>
                         <img src={'./mock_img/cart-icon-active.png'} alt="Cart Icon" className='cart-icon' />
-                        {/* <div className='cart-count'>{currentCount}</div> */}
                     </div>
                 </button>
-                <div className='cart-count'>{currentCount}</div>
+                {currentCount !== 0 ? (
+                  <div className='cart-count'>{currentCount}</div>
+                ):(
+                  <span></span>
+                )}
                 </div>
               ) : (
                   <span></span>
@@ -288,8 +202,7 @@ const EventsPage = () => {
                         e.preventDefault();
                         handleAddEvent(event.pk)
                       }}
-                      className="add-event-button"
-                    >
+                      className="add-event-button">
                       Добавить в корзину
                     </button>
                   </div>

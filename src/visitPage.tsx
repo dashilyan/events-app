@@ -6,57 +6,16 @@ import Breadcrumbs from './breadcrumbs';
 import { Offcanvas } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import { api } from './api';
-import { setCurrentCount, setCurrentVisitId } from './reduxSlices/eventSlice';
+// import { setCurrentCount, setCurrentVisitId } from './reduxSlices/eventSlice';
 import Cookies from 'js-cookie';
-
+import {fetchVisit, setEvents, deleteVisit,setGroup} from './reduxSlices/visitSlice'
 // Мок-данные для заявок на мероприятия
 const defaultImageUrl = '/events-app/mock_img/8.png';
-const mockVisits = [
- {
-  visitId: '1',
-  events: [
-   {
-    event_name: 'Выставка робототехники',
-    event_type: 'Выставка',
-    duration: '2 часа',
-    event_date: '2024-11-20',
-    img_url: null,
-   },
-   {
-    event_name: 'Лекция по искусственному интеллекту',
-    event_type: 'Лекция',
-    duration: '1.5 часа',
-    event_date: '2024-11-22',
-    img_url: null,
-   },
-  ],
-  group: 'Группа студентов ИУ9',
- },
- {
-  visitId: '2',
-  events: [
-   {
-    event_name: 'Мастер-класс по программированию',
-    event_type: 'Мастер-класс',
-    duration: '3 часа',
-    event_date: '2024-11-25',
-    img_url: null,
-   },
-  ],
-  group: 'Группа аспирантов',
- },
-];
 
 const VisitPage = () => {
  const { visitId } = useParams();
- const [currentEvents, setCurrentEvents] = useState([]);
- const [loading, setLoading] = useState(true);
- const [errorMessage, setErrorMessage] = useState('');
- const [group, setGroup] = useState('');
- const [eventDate, setEventDate] = useState(''); // Добавляем состояние для eventDate
- const [status, setStatus] = useState('');
- const [allowChanges, setAllowChanges]=useState(true);
- const [error, setError] = useState(null); // Для обработки ошибок
+ const {events, allowChanges, status, group,error} = useSelector((state)=>state.visits);
+ const [inputDate, setInputDate] = useState('');
 
  const { isAuthenticated} = useSelector((state) => state.auth); // Получаем данные о пользователе из Redux состояния
 
@@ -67,53 +26,14 @@ const VisitPage = () => {
  const dispatch = useDispatch();
  const navigate = useNavigate();
 
- const fetchVisit = async () => {
-  if (isAuthenticated) {
-  try {
-    const response = await api.visit.getVisitById(visitId);
-    const visitData = await response.data;
-    setCurrentEvents(visitData.events);
-    setStatus(visitData.status);
-    setGroup(visitData.group);
-    if (visitData.status!=='draft'){
-      dispatch(setAllowChanges(false));
-    }
-  } catch (error) {
-    console.error('Ошибка при выполнении запроса:', error);
-    setError('Ошибка при загрузке заявок');
-  } finally {
-    setLoading(false);
-  }
-}};
-
  useEffect(() => {
-    fetchVisit();
-  }, []);
+  if (isAuthenticated) {
+    dispatch(fetchVisit(visitId));
+  }  }, [visitId]);
 
 const handleDeleteVisit = async () => {
-  if (!visitId) return; 
-
-  try {
-    let csrfToken = Cookies.get('csrftoken');
-    const response = await fetch(`/api/moderate-visit/${visitId}/`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken,
-      }
-    });
-
-    if (response.ok) {
-      setCurrentEvents([]); 
-      dispatch(setCurrentVisitId(null));
-      dispatch(setCurrentCount(0));
-      navigate('/events')
-    } else {
-      alert('Ошибка при удалении запроса');
-    }
-  } catch (error) {
-    console.error('Ошибка:', error);
-  }
+  dispatch(deleteVisit(visitId));
+  navigate('/events');
  };
 
  const handleGroupChange = async  () => {
@@ -126,67 +46,49 @@ const handleDeleteVisit = async () => {
         'X-CSRFToken': csrfToken,
       }
     });
-
+    console.log('group change ok')
     if (response.status !== 200) {
       alert('Ошибка при удалении запроса');}
   } catch (error) {
     console.error('Ошибка:', error);
   }
+
+  dispatch(fetchVisit(visitId));
  };
 
 const handleDateChange = async  (eventId) => {
-  console.log("visitId:", visitId, "eventId:", eventId, "eventDate:", eventDate);
-  if (!visitId || !eventId || eventDate === '') return; // Проверяем, что данные заполнены
+  if (!visitId || !eventId || inputDate === '') return; // Проверяем, что данные заполнены
 
   try {
     let csrfToken = Cookies.get('csrftoken');
 
-    const response = await api.editEventVisit.editEventInVisit(visitId, {event_id:eventId,date:eventDate}, {
+    const response = await api.editEventVisit.editEventInVisit(visitId, {}, {
       headers: {
         'X-CSRFToken': csrfToken,
-      }
+      },
+      body : JSON.stringify({ event_id:eventId, date:inputDate })
     });
-
     if (response.status === 200) {
-      // Обновляем состояние мероприятий
-      setCurrentEvents((prevEvents) =>
-        prevEvents.map((event) =>
-          event.pk === eventId ? { ...event, date: eventDate } : event
-        )
-      );
+      dispatch(fetchVisit(visitId));
+
     } else {
       alert('Ошибка при обновлении стоимости');
     }
   } catch (error) {
     console.error('Ошибка:', error);
   }
+
+  // dispatch(fetchVisit(visitId));
+
 };
 
 const handleForm = async  () =>{
-  if (!visitId) return;
-
-  try {
-    let csrfToken = Cookies.get('csrftoken');
-    const response = await api.formVisit.formVisitById(visitId, {
-      headers: {
-        'X-CSRFToken': csrfToken,
-      }
-    });
-    if (response.status === 200) {
-      setCurrentEvents([]); // Очищаем угрозы после удаления
-      dispatch(setCurrentVisitId(null));
-      dispatch(setCurrentCount(0));
-      navigate('/events')
-    } else {
-      alert('Ошибка при удалении запроса');
-    }
-  } catch (error) {
-    console.error('Ошибка:', error);
-  }
+  dispatch(formVisit());
+  navigate('/events');
 };
 
-const handleDeleteEvent = async (event_id) =>{
-  if (!visitId || !event_id) return;
+const handleDeleteEvent = async (eventId) =>{
+  if (!visitId || !eventId) return;
   try {
     let csrfToken = Cookies.get('csrftoken');
     const response = await fetch(`/api/edit-event-visit/${visitId}/`, {
@@ -195,32 +97,33 @@ const handleDeleteEvent = async (event_id) =>{
         'Content-Type': 'application/json',
         'X-CSRFToken': csrfToken,
       },
-      body: JSON.stringify({ event_id }),
+      body: JSON.stringify({ event_id:eventId }),
     });
     console.log(response);
     if (response.ok) {
       // Успешно удалено
-      setCurrentEvents(currentEvents.filter((event) => event.id !== event_id)); // Обновляем список угроз
+      setEvents(events.filter((event) => event.id !== eventId)); // Обновляем список угроз
     } else {
       alert('Ошибка при удалении мероприятия');
     }
   } catch (error) {
     console.error('Ошибка:', error);
   }
-  fetchVisit();
+
+  dispatch(fetchVisit(visitId));
 };
 
- if (errorMessage) {
-  return (
-   <div className="container">
-    <div className="row justify-content-center">
-     <div className="col-auto">
-      <h2>{errorMessage}</h2>
-     </div>
-    </div>
-   </div>
-  );
- }
+//  if (error) {
+//   return (
+//    <div className="container">
+//     <div className="row justify-content-center">
+//      <div className="col-auto">
+//       <h2>{error}</h2>
+//      </div>
+//     </div>
+//    </div>
+//   );
+//  }
  if (!visitId) {
   return null;
  }
@@ -268,7 +171,6 @@ const handleDeleteEvent = async (event_id) =>{
             type="text"
             name="группа"
             value={group}
-            // onChange={(e) => setInputValue(e.target.value)}
             disabled={!allowChanges}
             onChange={(e) => dispatch(setGroup(e.target.value))}
             onKeyDown={(e) => {
@@ -298,10 +200,10 @@ const handleDeleteEvent = async (event_id) =>{
       </div>
 
    <div className="main_visit">
-    {currentEvents.length > 0 ? (
-     currentEvents.map(event => (
+    {events.length > 0 ? (
+     events.map((event) => (
         <div className="container">
-        <div className="event-card-long row my-4" key={event.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
+        <div className="event-card-long row my-4" key={event.pk} style={{minHeight:'14em', margin: '0 auto' }}>
           <div className="event-card-long-text col-md-8" style={{margin:'0', padding: '2em' }}>
             <h1>{event.event_name}</h1>
             <p>{event.event_type}</p>
@@ -312,12 +214,15 @@ const handleDeleteEvent = async (event_id) =>{
               type="date"
               name="date"
               className="form-control no-border px-3"
-              value={eventDate || event.date || "2020-10-20"}
+              value = "2020-10-20"
+              value={ event.date ? event.date : inputDate}
               disabled={!allowChanges}
               onChange={(e) => {
-                setEventDate(e.target.value);
-              }}
-              onBlur={() => handleDateChange(event.pk)} // Вызываем только по blur
+                setInputDate(e.target.value);
+            }}
+              onBlur={() => {
+                handleDateChange(event.pk)
+              }} // Здесь вы можете передать аргументы если нужно
               style={{ height: "100%", border: "none", padding: "0.5em 1em", borderRadius: "0.625em" }}
             />
             </h3>
@@ -363,12 +268,13 @@ const handleDeleteEvent = async (event_id) =>{
                 type="date"
                 name="date"
                 className="form-control no-border px-3"
-                value={eventDate || event.date || "2020-10-20"}
+                value={ event.date ? event.date : inputDate || "0000-00-00"}
                 disabled={!allowChanges}
                 onChange={(e) => {
-                  setEventDate(e.target.value);
-                  handleDateChange(visitId); // Здесь вы можете передать аргументы если нужно
+                  dispatch(setInputDate(e.target.value));
                 }}
+                onBlur={() => handleDateChange(event.pk)} // Здесь вы можете передать аргументы если нужно
+
                 style={{ height:'100%', border:'none',padding:'0.5em 1em',borderRadius:'0.625em'}}
                 />
             </h3>
@@ -380,7 +286,7 @@ const handleDeleteEvent = async (event_id) =>{
           </div>
         </div>
         </div>
-     ))
+      ))
     ) : (
         <div></div>
     )}

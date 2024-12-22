@@ -4,6 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from './navbar';
 import Breadcrumbs from './breadcrumbs';
 import { Offcanvas } from 'react-bootstrap';
+import { fetchEvent } from './reduxSlices/eventSlice'
+import { useSelector, useDispatch } from 'react-redux';
 
 // Мок-данные для мероприятий
 const mockEvents = [
@@ -37,41 +39,16 @@ const defaultImageUrl = '/events-app/mock_img/8.png';
 
 const EventDescription = () => {
   const { eventId } = useParams();
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true); // Для отображения состояния загрузки
-  const [error, setError] = useState(null); // Для обработки ошибок
+  const {currentEvent,loading,error} = useSelector((state)=>state.events);
   const [show, setShow] = useState(false);
+  const dispatch = useDispatch();
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
   useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        const response = await fetch(`/api/events/${eventId}/`);
-
-        if (!response.ok) {
-          throw new Error('Ошибка при загрузке данных мероприятия');
-        }
-
-        const eventData = await response.json();
-        setEvent(eventData);
-      } catch (err) {
-        // Используем мок-данные, если произошла ошибка
-        const mockEvent = mockEvents.find(item => item.pk === parseInt(eventId, 10));
-
-        if (mockEvent) {
-          setEvent(mockEvent);
-        } 
-        else {
-          setError('Мероприятие не найдено');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvent();
-  }, [eventId]);
+    dispatch(fetchEvent(eventId));
+  }, [dispatch, eventId]);
 
   // Обработка состояния загрузки и ошибок
   if (loading) {
@@ -120,39 +97,39 @@ const EventDescription = () => {
 
       <div className="container">
       <Breadcrumbs></Breadcrumbs>
-      <div className="event-card-long row my-4" key={event.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
+      <div className="event-card-long row my-4" key={currentEvent.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
         <div className="event-card-long-text col-md-8" style={{margin:'0', padding: '2em' }}>
-          <h1>{event.event_name}</h1>
-          <p>{event.event_type}</p>
-          <p>{event.duration}</p>
-          <p>{event.description}</p>
+          <h1>{currentEvent.event_name}</h1>
+          <p>{currentEvent.event_type}</p>
+          <p>{currentEvent.duration}</p>
+          <p>{currentEvent.description}</p>
         </div>
               
         {/* Изображение - 40% ширины */}
         <div className="event-card-long-img col-md-4" style={{padding:'0'}}>
           <img
-            src={event.img_url || defaultImageUrl}
-            alt={event.event_name}
+            src={currentEvent.img_url || defaultImageUrl}
+            alt={currentEvent.event_name}
             style={{ width: '100%', objectFit: 'cover',borderTopRightRadius:'10px', borderBottomRightRadius: '10px' }}
           />
         </div>
       </div>
 
-      <div className="event-card-long__mobile row my-4" key={event.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
+      <div className="event-card-long__mobile row my-4" key={currentEvent.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
         {/* Изображение - 40% ширины */}
         <div className="event-card-long-img col-md-4" style={{padding:'0'}}>
           <img
-            src={event.img_url || defaultImageUrl}
-            alt={event.event_name}
+            src={currentEvent.img_url || defaultImageUrl}
+            alt={currentEvent.event_name}
             style={{ width: '100%', objectFit: 'cover',borderTopRightRadius:'10px', borderTopLeftRadius: '10px' }}
           />
         </div>
         
         <div className="event-card-long-text col-md-8" style={{margin:'0', padding: '2em' }}>
-          <h1>{event.event_name}</h1>
-          <p>{event.event_type}</p>
-          <p>{event.duration}</p>
-          <p>{event.description}</p>
+          <h1>{currentEvent.event_name}</h1>
+          <p>{currentEvent.event_type}</p>
+          <p>{currentEvent.duration}</p>
+          <p>{currentEvent.description}</p>
         </div>
       </div>
       </div>
