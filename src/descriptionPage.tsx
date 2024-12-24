@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from './navbar';
 import Breadcrumbs from './breadcrumbs';
@@ -42,7 +42,7 @@ const EventDescription = () => {
   const {currentEvent,loading,error} = useSelector((state)=>state.events);
   const [show, setShow] = useState(false);
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
@@ -56,8 +56,8 @@ const EventDescription = () => {
   }
 
   if (error) {
-    return <div className="text-danger text-center my-5">Ошибка: {error}</div>;
-  }
+    navigate('/404');
+    return <div className="text-danger text-center my-5">Ошибка: {error}</div>;  }
 
   // Если данные мероприятия загружены
   return (
@@ -97,39 +97,39 @@ const EventDescription = () => {
 
       <div className="container">
       <Breadcrumbs></Breadcrumbs>
-      <div className="event-card-long row my-4" key={currentEvent.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
+      <div className="event-card-long row my-4" key={currentEvent?.pk} style={{minHeight:'14em', margin: '0 auto' }}>
         <div className="event-card-long-text col-md-8" style={{margin:'0', padding: '2em' }}>
-          <h1>{currentEvent.event_name}</h1>
-          <p>{currentEvent.event_type}</p>
-          <p>{currentEvent.duration}</p>
-          <p>{currentEvent.description}</p>
+          <h1>{currentEvent?.event_name}</h1>
+          <p>{currentEvent?.event_type}</p>
+          <p>{currentEvent?.duration}</p>
+          <p>{currentEvent?.description}</p>
         </div>
               
         {/* Изображение - 40% ширины */}
         <div className="event-card-long-img col-md-4" style={{padding:'0'}}>
           <img
-            src={currentEvent.img_url || defaultImageUrl}
-            alt={currentEvent.event_name}
+            src={currentEvent?.img_url || defaultImageUrl}
+            alt={currentEvent?.event_name}
             style={{ width: '100%', objectFit: 'cover',borderTopRightRadius:'10px', borderBottomRightRadius: '10px' }}
           />
         </div>
       </div>
 
-      <div className="event-card-long__mobile row my-4" key={currentEvent.event_name} style={{minHeight:'14em', margin: '0 auto' }}>
+      <div className="event-card-long__mobile row my-4" key={currentEvent?.pk} style={{minHeight:'14em', margin: '0 auto' }}>
         {/* Изображение - 40% ширины */}
         <div className="event-card-long-img col-md-4" style={{padding:'0'}}>
           <img
-            src={currentEvent.img_url || defaultImageUrl}
-            alt={currentEvent.event_name}
+            src={currentEvent?.img_url || defaultImageUrl}
+            alt={currentEvent?.event_name}
             style={{ width: '100%', objectFit: 'cover',borderTopRightRadius:'10px', borderTopLeftRadius: '10px' }}
           />
         </div>
         
         <div className="event-card-long-text col-md-8" style={{margin:'0', padding: '2em' }}>
-          <h1>{currentEvent.event_name}</h1>
-          <p>{currentEvent.event_type}</p>
-          <p>{currentEvent.duration}</p>
-          <p>{currentEvent.description}</p>
+          <h1>{currentEvent?.event_name}</h1>
+          <p>{currentEvent?.event_type}</p>
+          <p>{currentEvent?.duration}</p>
+          <p>{currentEvent?.description}</p>
         </div>
       </div>
       </div>

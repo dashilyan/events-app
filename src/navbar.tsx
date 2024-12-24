@@ -48,8 +48,15 @@ const Navbar = () => {
       )}
 
       <Link to="/events" className="navbar-link">Мероприятия</Link>
+      {isAuthenticated && is_staff ? (
+        <>
+        <Link to="/events-table" className='navbar-link'>Таблица мероприятий</Link>
+        </>
+      ) : (
+        <></>
+      )}
 
-      {isAuthenticated && !is_staff? (
+      {isAuthenticated? (
         <>
           <Link to="/visits" className="navbar-link">Посещения</Link>
         </>

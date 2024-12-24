@@ -29,7 +29,10 @@ const VisitPage = () => {
  useEffect(() => {
   if (isAuthenticated) {
     dispatch(fetchVisit(visitId));
-  }  }, [visitId]);
+  } else{
+    navigate(`/403`);
+  }  
+}, [visitId]);
 
 const handleDeleteVisit = async () => {
   dispatch(deleteVisit(visitId));
@@ -87,7 +90,7 @@ const handleForm = async  () =>{
   navigate('/events');
 };
 
-const handleDeleteEvent = async (eventId) =>{
+const handleDeleteEventVisit = async (eventId) =>{
   if (!visitId || !eventId) return;
   try {
     let csrfToken = Cookies.get('csrftoken');
@@ -113,17 +116,11 @@ const handleDeleteEvent = async (eventId) =>{
   dispatch(fetchVisit(visitId));
 };
 
-//  if (error) {
-//   return (
-//    <div className="container">
-//     <div className="row justify-content-center">
-//      <div className="col-auto">
-//       <h2>{error}</h2>
-//      </div>
-//     </div>
-//    </div>
-//   );
-//  }
+ if (error) {
+  return 
+    navigate('/404');
+    return <div className="text-danger text-center my-5">Ошибка: {error}</div>;
+ }
  if (!visitId) {
   return null;
  }
@@ -229,7 +226,7 @@ const handleDeleteEvent = async (eventId) =>{
             {allowChanges ? (
             <button 
               className="del-visit-button m-0"
-              onClick={() => handleDeleteEvent(event.pk)}
+              onClick={() => handleDeleteEventVisit(event.pk)}
               style={{background:'transparent',color:'#006CDC',borderWidth:'0.1em',borderColor:'#006CDC'}}>Удалить</button>
             ):(
               <span></span>
@@ -280,7 +277,7 @@ const handleDeleteEvent = async (eventId) =>{
             </h3>
             <button 
             className="del-visit-button m-0"
-            onClick={() => handleDeleteEvent(event.pk)}
+            onClick={() => handleDeleteEventVisit(event.pk)}
             style={{background:'transparent',color:'#006CDC',borderWidth:'0.1em',borderColor:'#006CDC'}}>Удалить</button>
             </div>
           </div>

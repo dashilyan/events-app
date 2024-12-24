@@ -2,6 +2,9 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import {api} from '../api'
 import Cookies from 'js-cookie'
 import { useSelector } from 'react-redux';
+import axios from 'axios'
+
+
 const initialState = {
   cart_count: 0,
   pk: null,
@@ -14,8 +17,8 @@ const initialState = {
   events: [],
 };
 
-const requestsSlice = createSlice({
-  name: 'requests',
+const visitsSlice = createSlice({
+  name: 'visits',
   initialState,
   reducers: {
     setCartCount: (state, action) => {
@@ -96,15 +99,15 @@ const requestsSlice = createSlice({
 });
 export const fetchVisits = createAsyncThunk(
   'visits/fetchVisits',
-  async (filters, { dispatch, rejectWithValue }) => {
+  async ({startDate,endDate,status_input}, { dispatch, rejectWithValue }) => {
     let visitsData;
     try {
-      let response;
-      if (filters) {
-        response = await api.listVisits.listVisitsByUsername(filters);
-      } else {
-        response = await api.listVisits.listVisitsByUsername();
-      }
+        const params = {};
+        if (startDate) params.start_date = startDate;
+        if (endDate) params.end_date = endDate;
+        if (status_input) params.status = status_input;
+
+      const response = await axios.get('/api/list-visits/', { params });
       visitsData = response.data;
       return {visitsData};
     } catch (error) {
@@ -187,6 +190,6 @@ export const deleteVisit = createAsyncThunk(
   }
   }
 );
-export const { setCartCount, setVisitPk, setEvents, setGroup } = requestsSlice.actions;
+export const { setCartCount, setVisitPk, setEvents, setGroup } = visitsSlice.actions;
 
-export default requestsSlice.reducer;
+export default visitsSlice.reducer;

@@ -82,7 +82,6 @@ export const fetchEvent = createAsyncThunk(
           throw new Error('Ошибка при загрузке данных мероприятия');
         }
         eventData = await response.json();
-
       } catch (err) {
         // Используем мок-данные, если произошла ошибка
         eventData = mockEvents.find(item => item.pk === parseInt(eventId, 10));
@@ -97,11 +96,14 @@ export const fetchEvent = createAsyncThunk(
 );
 const initialState = {
   inputValue: '',
+
   events: [],
   filteredEvents: [],
+
   currentVisitId: null,
   currentCount: 0,
-  currentEvent: null
+
+  currentEvent: null,
 };
 
 const eventsSlice = createSlice({

@@ -23,6 +23,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/EventsListSerializer'
+/events/create/
     post:
       summary: Создание нового события
       description: Создание нового события (только для персонала)
@@ -163,32 +164,39 @@ paths:
           description: Доступ запрещен
   /list-visits/:
     get:
-        summary: Получение списка всех визитов, кроме черновиков
-        description: Получение списка всех визитов, кроме черновиков. Доступно как для персонала, так и для обычных пользователей. Персонал видит все визиты, а обычные пользователи - только свои.
-        operationId: list-visits-by-username
-        security:
-          - basicAuth: []
-        parameters:
-          - in: query
-            name: date
-            schema:
-              type: string
-              format: date
-            description: Фильтр по дате создания визита (формат ГГГГ-ММ-ДД)
-          - in: query
-            name: status
-            schema:
-              type: string
-            description: Фильтр по статусу визита
-        responses:
-          '200':
-            description: Успешный ответ
-            content:
-              application/json:
-                schema:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/VisitSerializer'
+      summary: "Получение списка всех визитов, кроме черновиков"
+      description: "Получение списка всех визитов, кроме черновиков. Поддерживается фильтрация по дате и статусу."
+      security:
+         - basicAuth: [] # Указывает, что API требует авторизации
+      parameters:
+        - in: query
+          name: start_date
+          description: "Начальная дата фильтрации в формате YYYY-MM-DD."
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: end_date
+          description: "Конечная дата фильтрации в формате YYYY-MM-DD."
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: status
+          description: "Статус для фильтрации. Возможные значения зависят от вашей модели `Visit`"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Успешный ответ со списком визитов"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Visit"
+        "401":
+          description: "Unauthorized. Требуется авторизация."
   /visit/{pk}/:
     get:
       summary: Получение деталей визита по ID

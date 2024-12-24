@@ -19,7 +19,9 @@ const Breadcrumbs = () => {
     'visits':'Таблица посещений',
     'lks':'Личный кабинет',
     'auth':'Вход',
-    'reg':'Регистрация'
+    'reg':'Регистрация',
+    'events-table':'Таблица мероприятий',
+    'edit-event':'Изменение мероприятия'
   };
   const [eventNames, setEventNames] = useState({}); // Состояние для хранения имен мероприятий
 

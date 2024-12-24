@@ -17,7 +17,6 @@ const AuthPage = () => {
   const [username, setUsername] = useState(''); // Состояние для имени пользователя
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,11 +31,11 @@ const AuthPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }), // Отправляем username вместо email
       });
-
+      console.log(response);
       if (response.ok) {
         const data = await response.json()
         let is_staff = false;
-        if(data.staff == true) {
+        if(data.is_staff == true) {
           is_staff = true;
         }
         

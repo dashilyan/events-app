@@ -7,7 +7,7 @@ import Breadcrumbs from './breadcrumbs';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFilteredEvents, setInputValue, setCurrentCount, setCurrentVisitId, fetchEvents, addEvent } from './reduxSlices/eventSlice';
 import { api } from './api';
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'
 
 const mockEvents = [
   {

@@ -12,8 +12,6 @@ import VisitPage from './visitPage.tsx';
 import VisitsTable from './visitsTablePage.tsx';
 import LKSPage from './lksPage.tsx';
 import RegPage from './regPage.tsx';
-import { Provider } from 'react-redux';
-import storage from './reduxSlices/storage.tsx';
 
 // Создаем маршрутизатор с путями для всех страниц
 const router = createBrowserRouter([
