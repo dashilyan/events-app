@@ -75,36 +75,42 @@ export default function VisitsTable() {
   const navigate = useNavigate();
 
   const { visits } = useSelector((state)=> state.visits);
-  const { isAuthenticated } = useSelector((state) => state.auth); // Проверка на авторизацию
+  const { isAuthenticated, is_staff } = useSelector((state) => state.auth); // Проверка на авторизацию
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [status, setStatus] = useState('');
+  const [creator, setCreator] = useState('');
 
   const handleFetchVisits = () => {
     dispatch(fetchVisits({
         startDate:startDate,
         endDate:endDate,
-        status_input:status
+        status_input:status,
+        creator_input:creator
     }));
 }
 
 
 useEffect(() => {
   if (isAuthenticated) {
+    let intervalId;
     handleFetchVisits();
+
+    intervalId = setInterval(handleFetchVisits, 2000);
+    return () => clearInterval(intervalId);
   }else{
     navigate(`/403`);
   }  
-}, [startDate, endDate, status, dispatch, isAuthenticated]);
+}, [startDate, endDate, status, creator,dispatch, isAuthenticated]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(fetchVisits({start_date:startDate,end_date:endDate,status_input:status}));
-    } else{
-      navigate(`/403`);
-    }  
-  }, [isAuthenticated]);
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     dispatch(fetchVisits({start_date:startDate,end_date:endDate,status_input:status}));
+  //   } else{
+  //     navigate(`/403`);
+  //   }  
+  // }, [isAuthenticated]);
 
   const handleEndVisit = async (visitId,accept_value) => {
     try {
@@ -162,6 +168,7 @@ useEffect(() => {
       </div>
       <div className='container'>
         <Breadcrumbs></Breadcrumbs>
+        {is_staff ? (
         <div className='d-flex flex-row gap-4' style={{ alignItems: 'end', marginBottom: '20px', justifyContent: 'start', flexWrap: 'wrap' }}>
         <div className='d-flex flex-row gap-4 ' style={{ alignItems: 'stretch', maxHeight:'100px'}}>
     <div className='event-card-long-text m-0 d-flex flex-column justify-content-between' style={{ alignItems: 'stretch'}}>
@@ -201,7 +208,14 @@ useEffect(() => {
                       type="text"
                       name="name"
                       className="form-control no-border px-3"
-                      value = "имя пользователя"
+                      value = {creator}
+                      placeholder='пользователь'
+                      onChange = {(e)=>
+                      {
+                        setCreator(e.target.value);
+                        handleFetchVisits()
+                      }
+                    }
                       style={{ height: "100%", border: "none", padding: "0", margin:'0', borderRadius: "0.625em" }}
                   />
               </h3>
@@ -222,6 +236,9 @@ useEffect(() => {
                 </div>
             </div>
             </div>
+        ) : (
+          <></>
+        )}
          <Table striped bordered hover className="custom-table mt-4" style={{'--bs-table-border-color':'white'}}>
              <thead>
                  <tr>
@@ -257,7 +274,9 @@ useEffect(() => {
                          <td>
                          <div className='d-flex flex-column gap-2'>
                           <Link to={`/visit/${visit.pk}`} className='add-event-button'>Детали</Link>
-                          <button
+                          {is_staff ? (
+                            <>
+<button
                           onClick={(e) => {
                             e.preventDefault();
                             handleEndVisit(visit.pk,true)
@@ -272,7 +291,10 @@ useEffect(() => {
                           }}
                           className="add-event-button m-0 justify-content-center">
                           Отклонить
-                          </button>
+                          </button>                            </>
+                          ) : (
+                            <></>
+                          )}
                          </div>
                          </td>
                      </tr>

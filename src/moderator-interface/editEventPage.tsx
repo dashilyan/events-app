@@ -86,7 +86,8 @@ const EditEvent = () => {
       console.log(imageFile)
       formData.append('event_id', eventId);
       formData.append('pic', imageFile);
-      const response = await axios.post('/api/events/image/', formData, {
+
+      const response = await axios.post('/api/events/image/',formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'X-CSRFToken': Cookies.get('csrftoken'),
@@ -108,14 +109,6 @@ const EditEvent = () => {
     e.preventDefault();
 
     try {
-      let imageUrl = event.img_url;
-      if (imageFile) {
-        // Сначала загружаем изображение
-        imageUrl = await uploadImage();
-      }
-
-      const newEvent = { ...event, img_url: imageUrl };
-
       let curr_id;
       const newEvent = { ...event, img_url: defaultImageUrl};
       if (eventId) {
@@ -124,9 +117,6 @@ const EditEvent = () => {
         });
         curr_id=eventId;
       } else {
-        // await api.events.eventCreate(newEvent, {
-        //   headers: { 'X-CSRFToken': Cookies.get('csrftoken') },
-        // });
         const response=await axios.post('/api/events/create/', newEvent, {
         headers: {
           'Content-Type': 'application/json',
@@ -139,6 +129,12 @@ const EditEvent = () => {
       }
 
       dispatch(fetchEvent(curr_id));
+      let imageUrl = event.img_url;
+      if (imageFile) {
+        // Сначала загружаем изображение
+        imageUrl = await uploadImage();
+      }
+      
       navigate('/events-table');
     } catch (err) {
       console.error('Ошибка при сохранении мероприятия:', err);

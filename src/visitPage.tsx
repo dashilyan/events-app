@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { api } from './api';
 // import { setCurrentCount, setCurrentVisitId } from './reduxSlices/eventSlice';
 import Cookies from 'js-cookie';
-import {fetchVisit, setEvents, deleteVisit,setGroup} from './reduxSlices/visitSlice'
+import {fetchVisit, setEvents, deleteVisit,setGroup,formVisit} from './reduxSlices/visitSlice'
 // Мок-данные для заявок на мероприятия
 const defaultImageUrl = '/events-app/mock_img/8.png';
 
@@ -86,7 +86,7 @@ const handleDateChange = async  (eventId) => {
 };
 
 const handleForm = async  () =>{
-  dispatch(formVisit());
+  dispatch(formVisit(visitId));
   navigate('/events');
 };
 
@@ -212,7 +212,7 @@ const handleDeleteEventVisit = async (eventId) =>{
               name="date"
               className="form-control no-border px-3"
               value = "2020-10-20"
-              value={ event.date ? event.date : inputDate}
+              value={event.date}
               disabled={!allowChanges}
               onChange={(e) => {
                 setInputDate(e.target.value);

@@ -43,7 +43,7 @@ const visitsSlice = createSlice({
         })
         .addCase(fetchVisits.fulfilled, (state, action) => {
           state.loading = false;
-          state.visits = action.payload.visitsData;
+          state.visits = action.payload.filtered;
         })
          .addCase(fetchVisits.rejected, (state, action) => {
           state.loading = false;
@@ -99,7 +99,7 @@ const visitsSlice = createSlice({
 });
 export const fetchVisits = createAsyncThunk(
   'visits/fetchVisits',
-  async ({startDate,endDate,status_input}, { dispatch, rejectWithValue }) => {
+  async ({startDate,endDate,status_input,creator_input}, { dispatch, rejectWithValue }) => {
     let visitsData;
     try {
         const params = {};
@@ -109,7 +109,11 @@ export const fetchVisits = createAsyncThunk(
 
       const response = await axios.get('/api/list-visits/', { params });
       visitsData = response.data;
-      return {visitsData};
+      const filtered = visitsData.filter((visit) =>
+        creator_input ? visit.user.toLowerCase().includes(creator_input.toLowerCase()) : true
+      );
+
+      return {filtered};
     } catch (error) {
       console.error('Ошибка при выполнении запроса:', error);
       return rejectWithValue({visitsData: null});

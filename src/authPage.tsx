@@ -35,6 +35,7 @@ const AuthPage = () => {
       if (response.ok) {
         const data = await response.json()
         let is_staff = false;
+        console.log(data);
         if(data.is_staff == true) {
           is_staff = true;
         }
