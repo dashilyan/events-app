@@ -7,7 +7,7 @@
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://192.168.56.101:3000/events-app",
     "beforeBuildCommand": "npm run build",
-    "frontendDist": "/home/daria/django-rip/events-app/dist"
+    "frontendDist": "../../dist"
   },
   "app": {
     "windows": [
