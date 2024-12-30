@@ -4,52 +4,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from './navbar';
 import { Offcanvas } from 'react-bootstrap';
 import Breadcrumbs from './breadcrumbs';
-import { useDispatch } from 'react-redux';
-import { login } from './reduxSlices/authSlice'; // Импортируем экшн для авторизации
-import Cookie from 'js-cookie';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, loginUser, setUsername, setPassword } from './reduxSlices/authSlice'; // Импортируем экшн для авторизации
 
 const AuthPage = () => {
   const [show, setShow] = useState(false);
-
+  const { isAuthenticated, username,password } = useSelector((state) => state.auth); // Проверка на авторизацию
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-
-  const [username, setUsername] = useState(''); // Состояние для имени пользователя
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    try {
-      Cookie.remove('csrftoken');
-      Cookie.remove('sessionid');
-      const response = await fetch('/api/login/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }), // Отправляем username вместо email
-      });
-      console.log(response);
-      if (response.ok) {
-        const data = await response.json()
-        let is_staff = false;
-        console.log(data);
-        if(data.is_staff == true) {
-          is_staff = true;
-        }
-        
-        // После успешного входа мы передаем username в Redux, а не из ответа сервера
-        dispatch(login({ username, is_staff })); // Авторизуем пользователя
-        navigate('/events'); // После успешного входа перенаправляем на страницу угроз
-      } else {
-        const errorData = await response.json();
-        setError('Неверное имя пользователя или пароль')
-      }
-    } catch (error) {
-      console.error('Ошибка при входе:', error);
-      alert('Ошибка при входе. Пожалуйста, попробуйте позже.');
+    dispatch(loginUser({username,password}));
+    if (isAuthenticated){
+      navigate(`/events`);
+    }
+    else{
+      alert('error with auth');
     }
   };
 
@@ -101,7 +75,7 @@ const AuthPage = () => {
             type="text"
             name="event_type"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => dispatch(setUsername(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Имя пользователя"
@@ -114,7 +88,7 @@ const AuthPage = () => {
             type="password"
             name="event_type"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => dispatch(setPassword(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Пароль"
@@ -138,7 +112,7 @@ const AuthPage = () => {
             type="text"
             name="username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => dispatch(setUsername(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Имя пользователя"
@@ -151,7 +125,7 @@ const AuthPage = () => {
             type="text"
             name="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => dispatch(setPassword(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Пароль"

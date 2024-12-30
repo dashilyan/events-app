@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie'
 import {api} from '../api'
+const defaultImageUrl = '/events-app/mock_img/8.png';
+import axios from 'axios';
+
 const mockEvents = [
   {
     pk: 1,
@@ -104,6 +107,16 @@ const initialState = {
   currentCount: 0,
 
   currentEvent: null,
+  event: {
+    pk:null,
+    event_name: '',
+    event_type: '',
+    duration: '',
+    description: '',
+    img_url: '',
+  },
+  imageFile: null,
+  imageUrl:null,
 };
 
 const eventsSlice = createSlice({
@@ -121,6 +134,12 @@ const eventsSlice = createSlice({
     },
     setCurrentVisitId: (state, action) => {
       state.currentVisitId = action.payload;
+    },
+    setEvent: (state,action) =>{
+      state.event = action.payload;
+    },
+    setImageFile: (state,action) =>{
+      state.imageFile = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -143,6 +162,7 @@ const eventsSlice = createSlice({
         state.currentVisitId = action.payload.currentVisitId;
         state.currentCount = action.payload.currentCount;
       })
+
       .addCase(addEvent.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -160,6 +180,7 @@ const eventsSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
       .addCase(fetchEvent.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -169,6 +190,44 @@ const eventsSlice = createSlice({
         state.currentEvent = action.payload.eventData;
       })
        .addCase(fetchEvent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(uploadImage.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(uploadImage.fulfilled, (state, action) => {
+        state.loading = false;
+        // state.img_url = action.payload.eventData;
+      })
+       .addCase(uploadImage.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(editEvent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editEvent.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentEvent = action.payload.eventData;
+      })
+       .addCase(editEvent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(deleteEvent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteEvent.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+       .addCase(deleteEvent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -203,10 +262,84 @@ export const addEvent = createAsyncThunk(
       }
   }
 );
+export const deleteEvent = createAsyncThunk(
+  'events/deleteEvent',
+  async (eventId, { dispatch, rejectWithValue }) => {
+    try {
+      await api.events.eventDelete(eventId, {
+        headers: { 'X-CSRFToken': Cookies.get('csrftoken') },
+      });
+      return;
+    } catch (error) {
+      return rejectWithValue('Ошибка при удалении мероприятия');
+    }
+  }
+);
+export const uploadImage = createAsyncThunk(
+  'events/uploadImage',
+  async ({eventId, imageFile}, { dispatch, rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      console.log(imageFile)
+      formData.append('event_id', eventId);
+      formData.append('pic', imageFile);
 
+      const response = await axios.post('/api/events/image/',formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRFToken': Cookies.get('csrftoken'),
+        },
+      });
+
+      if (response.status === 201) {
+        return `http://192.168.56.101:9000/static/${imageFile.name}`;
+      } else {
+        return rejectWithValue('Ошибка при загрузке изображения')
+      }
+    } catch (err) {
+      return rejectWithValue('Не удалось загрузить изображение.')
+    }
+  }
+);
+export const editEvent = createAsyncThunk(
+  'events/editEvent',
+  async ({eventId, event, imageFile}, { dispatch, rejectWithValue }) => {
+    try {
+      let curr_id;
+      let eventData;
+      const newEvent = { ...event, img_url: defaultImageUrl};
+      if (eventId) {
+        await api.events.eventUpdate(eventId, newEvent, {
+          headers: { 'X-CSRFToken': Cookies.get('csrftoken')},
+        });
+        eventData=newEvent;
+        curr_id = newEvent.pk;
+      } else {
+        const response=await axios.post('/api/events/create/', newEvent, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': Cookies.get('csrftoken'),
+        },
+      });
+      console.log(response);
+      eventData = await response.json();
+      curr_id = eventData.pk;
+      }
+      let imageUrl = event.img_url;
+      if (imageFile) {
+        // Сначала загружаем изображение
+        imageUrl = await uploadImage(curr_id,imageFile);
+      }
+      return {eventData}
+      } catch (error) {
+      // console.error('Ошибка при сохранении мероприятия:', err);
+      return rejectWithValue(`Ошибка при сохранении мероприятия: ${error.message}`);
+    }
+  }
+);
 export const {
   setFilteredEvents,
-  setInputValue,setCurrentCount, setCurrentVisitId
+  setInputValue,setCurrentCount, setCurrentVisitId, setEvent, setImageFile
 } = eventsSlice.actions;
 
 export default eventsSlice.reducer;

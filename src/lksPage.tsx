@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { logout } from './reduxSlices/authSlice';
+import { logout, fetchUser, updateUser, setEmail, setUsername, setFirstName, setLastName} from './reduxSlices/authSlice';
 import { Offcanvas } from 'react-bootstrap';
-import { api } from './api';
 import Navbar from './navbar';
 import Breadcrumbs from './breadcrumbs';
-import axios from 'axios';
-import Cookies from 'js-cookie';
+
 
 const LKSPage = () => {
   const [show, setShow] = useState(false);
@@ -16,14 +14,8 @@ const LKSPage = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const { username, isAuthenticated } = useSelector((state) => state.auth);
+  const { username, isAuthenticated, email, first_name, last_name } = useSelector((state) => state.auth);
 
-  const [email, setEmail] = useState('');
-  const [first_name, setFirstName] = useState('');
-  const [last_name, setLastName] = useState('');
-
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -34,68 +26,15 @@ const LKSPage = () => {
 }, [isAuthenticated, navigate]);
 
 useEffect(() => {
-const fetchProfile = async () => {
-  try {
-    const csrfToken = Cookies.get('csrftoken');
-    const response = await axios.put('/api/profile/', {}, {
-       headers: {
-         'X-CSRFToken': csrfToken,
-         'Content-Type': 'application/json',
-       }
-     });
-    if (response.status === 200) {
-      const { email, first_name, last_name } = response.data;
-      setEmail(email || '');
-      setFirstName(first_name || '');
-      setLastName(last_name || '');
-    }
-  } catch (error) {
-    console.error('Ошибка при получении данных профиля:', error);
-    setError('Не удалось загрузить данные профиля.');
-  }
-};
 
 if (isAuthenticated) {
-  fetchProfile();
+  dispatch(fetchUser());
 }
 }, [isAuthenticated]);
   
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
-
-    try {
-      const csrfToken = Cookies.get('csrftoken'); // Получаем CSRF токен из cookies
-      const data = {};
-
-      // Добавляем только те параметры, которые не пустые
-      if (email) data.email = email;
-      if (first_name) data.first_name = first_name;
-      if (last_name) data.last_name = last_name;
-
-      // Проверяем, есть ли данные для отправки
-      if (Object.keys(data).length === 0) {
-        setError('Необходимо ввести хотя бы один параметр для обновления.');
-        setSuccess('');
-        return;
-      }
-
-      const response = await axios.put('/api/profile/', data, {
-        headers: {
-          'X-CSRFToken': csrfToken,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.status === 200) {
-        setSuccess('Профиль обновлен успешно');
-        setError('');
-        dispatch(logout());
-       }
-    } catch (error) {
-      console.error('Ошибка при обновлении профиля:', error);
-      setError('Ошибка при обновлении данных профиля');
-      setSuccess('');
-    }
+    dispatch(updateUser({email, first_name,last_name}));
   };
 
   return (
@@ -146,7 +85,7 @@ if (isAuthenticated) {
             type="text"
             name="first_name"
             value={first_name}
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={(e) => dispatch(setFirstName(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder={first_name || "Введите имя"}
@@ -159,7 +98,7 @@ if (isAuthenticated) {
             type="text"
             name="last_name"
             value={last_name}
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={(e) => dispatch(setLastName(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder={last_name || "Введите фамилию"}
@@ -172,7 +111,7 @@ if (isAuthenticated) {
             type="text"
             name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => dispatch(setEmail(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder={email || "Введите email"}
@@ -195,7 +134,7 @@ if (isAuthenticated) {
             type="text"
             name="first_name"
             value={first_name}
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={(e) => dispatch(setFirstName(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Имя"
@@ -208,7 +147,7 @@ if (isAuthenticated) {
             type="text"
             name="last_name"
             value={last_name}
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={(e) => dispatch(setLastName(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Фамилия"
@@ -221,7 +160,7 @@ if (isAuthenticated) {
             type="text"
             name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => dispatch(setEmail(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Email"

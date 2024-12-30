@@ -5,7 +5,7 @@ import Navbar from './navbar';
 import { Offcanvas } from 'react-bootstrap';
 import Breadcrumbs from './breadcrumbs';
 import { useDispatch } from 'react-redux';
-import { login } from './reduxSlices/authSlice'; // Импортируем экшн для авторизации
+import { login, regUser, setEmail, setFirstName, setLastName, setPassword, setUsername } from './reduxSlices/authSlice'; // Импортируем экшн для авторизации
 
 const RegPage = () => {
   const [show, setShow] = useState(false);
@@ -13,33 +13,19 @@ const RegPage = () => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const { username, isAuthenticated,email, first_name, last_name, password } = useSelector((state) => state.auth);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await fetch('/api/auth/register/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        dispatch(login({ username: data.username })); // Авторизуем пользователя после регистрации
-        navigate('/login'); // Перенаправляем на страницу входа
-      } else {
-        alert('Ошибка регистрации. Пожалуйста, проверьте введенные данные.');
-      }
-    } catch (error) {
-      console.error('Ошибка при регистрации:', error);
-      alert('Ошибка при регистрации. Пожалуйста, попробуйте позже.');
+    dispatch(regUser({email,username,password}));
+    if (isAuthenticated){
+      navigate('/events');
+    }
+    else{
+      navigate('/auth');
     }
   };
 
@@ -91,7 +77,7 @@ const RegPage = () => {
             type="text"
             name="username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => dispatch(setUsername(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Имя пользователя"
@@ -104,7 +90,7 @@ const RegPage = () => {
             type="text"
             name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => dispatch(setEmail(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Пароль"
@@ -117,7 +103,7 @@ const RegPage = () => {
             type="text"
             name="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => dispatch(setPassword(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Пароль"
@@ -140,7 +126,7 @@ const RegPage = () => {
             type="text"
             name="username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => dispatch(setUsername(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Имя пользователя"
@@ -153,7 +139,7 @@ const RegPage = () => {
             type="text"
             name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => dispatch(setEmail(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Email"
@@ -166,7 +152,7 @@ const RegPage = () => {
             type="text"
             name="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => dispatch(setPassword(e.target.value))}
             // onChange={(e) => dispatch(setInputValue(e.target.value))}
             className="search-bar form-control col-auto"
             placeholder="Пароль"

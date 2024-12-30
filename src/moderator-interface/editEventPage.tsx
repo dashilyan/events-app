@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from '../navbar';
 import Breadcrumbs from '../breadcrumbs';
 import { Offcanvas } from 'react-bootstrap';
-import { setFilteredEvents, setInputValue, setCurrentCount, setCurrentVisitId, fetchEvent, addEvent } from '../reduxSlices/eventSlice';
+import { fetchEvent, setEvent, setImageFile, editEvent} from '../reduxSlices/eventSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { api } from '../api';
 import { current } from '@reduxjs/toolkit';
@@ -26,23 +26,23 @@ const defaultImageUrl = '/events-app/mock_img/8.png';
 
 const EditEvent = () => {
   const { eventId } = useParams();
-  const {currentEvent,loading,error} = useSelector((state)=>state.events);
+  const {currentEvent,loading,error, event, imageFile} = useSelector((state)=>state.events);
   const [show, setShow] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, is_staff } = useSelector((state) => state.auth); // Проверка на авторизацию
-  const [imageFile, setImageFile] = useState(null);
+  // const [imageFile, setImageFile] = useState(null);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const [event, setEvent] = useState({
-    pk:null,
-    event_name: '',
-    event_type: '',
-    duration: '',
-    description: '',
-    img_url: '',
-  });
+  // const [event, setEvent] = useState({
+  //   pk:null,
+  //   event_name: '',
+  //   event_type: '',
+  //   duration: '',
+  //   description: '',
+  //   img_url: '',
+  // });
 
   useEffect(() => {
     if (!isAuthenticated || !is_staff){
@@ -55,7 +55,7 @@ const EditEvent = () => {
 
       dispatch(fetchEvent(eventId));
 
-      setEvent(currentEvent);
+      dispatch(setEvent(currentEvent));
 
       console.log(event);
     }
@@ -72,74 +72,74 @@ const EditEvent = () => {
   }
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEvent((prev) => ({ ...prev, [name]: value }));
+    dispatch(setEvent((prev) => ({ ...prev, [name]: value })));
   };
 
   const handleImageChange = (e) => {
     console.log(e.target.files[0])
-    setImageFile(e.target.files[0]);
+    dispatch(setImageFile(e.target.files[0]));
   };
 
-  const uploadImage = async () => {
-    try {
-      const formData = new FormData();
-      console.log(imageFile)
-      formData.append('event_id', eventId);
-      formData.append('pic', imageFile);
+  // const uploadImage = async () => {
+  //   try {
+  //     const formData = new FormData();
+  //     console.log(imageFile)
+  //     formData.append('event_id', eventId);
+  //     formData.append('pic', imageFile);
 
-      const response = await axios.post('/api/events/image/',formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'X-CSRFToken': Cookies.get('csrftoken'),
-        },
-      });
+  //     const response = await axios.post('/api/events/image/',formData, {
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data',
+  //         'X-CSRFToken': Cookies.get('csrftoken'),
+  //       },
+  //     });
 
-      if (response.status === 201) {
-        return `http://192.168.56.101:9000/static/${imageFile.name}`;
-      } else {
-        throw new Error('Ошибка при загрузке изображения');
-      }
-    } catch (err) {
-      console.error('Ошибка при загрузке изображения:', err);
-      throw new Error('Не удалось загрузить изображение.');
-    }
-  };
+  //     if (response.status === 201) {
+  //       return `http://192.168.56.101:9000/static/${imageFile.name}`;
+  //     } else {
+  //       throw new Error('Ошибка при загрузке изображения');
+  //     }
+  //   } catch (err) {
+  //     console.error('Ошибка при загрузке изображения:', err);
+  //     throw new Error('Не удалось загрузить изображение.');
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    dispatch(editEvent(eventId, event, imageFile));
+    // try {
+    //   let curr_id;
+    //   const newEvent = { ...event, img_url: defaultImageUrl};
+    //   if (eventId) {
+    //     await api.events.eventUpdate(eventId, newEvent, {
+    //       headers: { 'X-CSRFToken': Cookies.get('csrftoken')},
+    //     });
+    //     curr_id=eventId;
+    //   } else {
+    //     const response=await axios.post('/api/events/create/', newEvent, {
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'X-CSRFToken': Cookies.get('csrftoken'),
+    //     },
+    //   });
+    //   console.log(response);
+    //   const eventData = await response.json();
+    //   curr_id=eventData.pk;
+    //   }
 
-    try {
-      let curr_id;
-      const newEvent = { ...event, img_url: defaultImageUrl};
-      if (eventId) {
-        await api.events.eventUpdate(eventId, newEvent, {
-          headers: { 'X-CSRFToken': Cookies.get('csrftoken')},
-        });
-        curr_id=eventId;
-      } else {
-        const response=await axios.post('/api/events/create/', newEvent, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': Cookies.get('csrftoken'),
-        },
-      });
-      console.log(response);
-      const eventData = await response.json();
-      curr_id=eventData.pk;
-      }
-
-      dispatch(fetchEvent(curr_id));
-      let imageUrl = event.img_url;
-      if (imageFile) {
-        // Сначала загружаем изображение
-        imageUrl = await uploadImage();
-      }
+    //   dispatch(fetchEvent(curr_id));
+    //   let imageUrl = event.img_url;
+    //   if (imageFile) {
+    //     // Сначала загружаем изображение
+    //     imageUrl = await uploadImage();
+    //   }
       
-      navigate('/events-table');
-    } catch (err) {
-      console.error('Ошибка при сохранении мероприятия:', err);
-      // setError('Не удалось сохранить данные. Проверьте введенные данные.');
-    }
+    //   navigate('/events-table');
+    // } catch (err) {
+    //   console.error('Ошибка при сохранении мероприятия:', err);
+    //   // setError('Не удалось сохранить данные. Проверьте введенные данные.');
+    // }
   };
 
   return (

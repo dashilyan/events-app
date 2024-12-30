@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux'; // Импортируем необходимые хуки из Redux
-import { logout } from './reduxSlices/authSlice'; // Импортируем экшн logout
+import { logout, logoutUser } from './reduxSlices/authSlice'; // Импортируем экшн logout
 import axios from 'axios'; // Импортируем axios
 import Cookies from 'js-cookie'; // Импортируем js-cookie для работы с cookies
 import './App.css'; // Импортируем стили для navbar
@@ -14,26 +14,26 @@ const Navbar = () => {
 
   const handleLogout = async (e) => {
     e.preventDefault();
+    dispatch(logoutUser());
+    // try {
+    //   const csrfToken = Cookies.get('csrftoken'); // Получаем CSRF токен из cookies
 
-    try {
-      const csrfToken = Cookies.get('csrftoken'); // Получаем CSRF токен из cookies
+    //   const response = await axios.post('/api/logout/', {}, {
+    //     headers: {
+    //       'X-CSRFToken': csrfToken, // Подставляем CSRF токен в заголовок запроса
+    //       'Content-Type': 'application/json',
+    //     }
+    //   });
 
-      const response = await axios.post('/api/logout/', {}, {
-        headers: {
-          'X-CSRFToken': csrfToken, // Подставляем CSRF токен в заголовок запроса
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (response.status === 204) {
-        dispatch(setInputValue(''));
-        dispatch(logout());
-        navigate('/auth');
-      }
-    } catch (error) {
-      console.error('Ошибка при выходе:', error);
-      alert('Ошибка при выходе. Пожалуйста, попробуйте позже.');
-    }
+    //   if (response.status === 204) {
+    //     dispatch(setInputValue(''));
+    //     dispatch(logout());
+    //     navigate('/auth');
+    //   }
+    // } catch (error) {
+    //   console.error('Ошибка при выходе:', error);
+    //   alert('Ошибка при выходе. Пожалуйста, попробуйте позже.');
+    // }
   };
 
   return (

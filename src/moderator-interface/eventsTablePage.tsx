@@ -8,7 +8,7 @@ import { api } from '../api';
 import { useSelector, useDispatch } from 'react-redux';
 import { format, parseISO } from 'date-fns';
 import { fetchVisits } from '../reduxSlices/visitSlice'
-import { setFilteredEvents, setInputValue, setCurrentCount, setCurrentVisitId, fetchEvents, addEvent } from '../reduxSlices/eventSlice';
+import { setFilteredEvents, setInputValue, setCurrentCount, setCurrentVisitId, fetchEvents, addEvent, deleteEvent } from '../reduxSlices/eventSlice';
 import Cookies from 'js-cookie'
 
 const defaultImageUrl = 'mock_img/8.png';
@@ -34,15 +34,17 @@ export default function EventsTable() {
   }, []);
 
   const handleDeleteEvent= async (eventId) => {
-    try {
-      await api.events.eventDelete(eventId, {
-        headers: { 'X-CSRFToken': Cookies.get('csrftoken') },
-      });
-      dispatch(fetchEvents());
+    // try {
+    //   await api.events.eventDelete(eventId, {
+    //     headers: { 'X-CSRFToken': Cookies.get('csrftoken') },
+    //   });
+    //   dispatch(fetchEvents());
 
-    } catch (error) {
-      console.error('Ошибка при удалении угрозы:', error);
-    }
+    // } catch (error) {
+    //   console.error('Ошибка при удалении угрозы:', error);
+    // }
+    dispatch(deleteEvent(eventId));
+    dispatch(fetchEvents());
   };
   return (
     <div>
