@@ -46,6 +46,9 @@ jobs:
 
       - uses: tauri-apps/tauri-action@v0
         env:
+          CARGO_HOME: C:\Users\runneradmin/.cargo
+          CARGO_INCREMENTAL: 0
+          CARGO_TERM_COLOR: always
           GITHUB_TOKEN: ${{ secrets.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 }}
         with:
           tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
@@ -53,4 +56,9 @@ jobs:
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: false
+          projectPath: .
+          includeDebug: false
+          includeRelease: true
+          includeUpdaterJson: true
+          updaterJsonKeepUniversal: false
           args: ${{ matrix.args }}
