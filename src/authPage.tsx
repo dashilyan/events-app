@@ -42,7 +42,7 @@ const AuthPage = () => {
         
         // После успешного входа мы передаем username в Redux, а не из ответа сервера
         dispatch(login({ username, is_staff })); // Авторизуем пользователя
-        navigate('/events'); // После успешного входа перенаправляем на страницу мероприятий
+        navigate('/events'); // После успешного входа перенаправляем на страницу угроз
       } else {
         const errorData = await response.json();
         setError('Неверное имя пользователя или пароль')

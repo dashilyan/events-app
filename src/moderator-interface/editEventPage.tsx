@@ -26,35 +26,42 @@ const defaultImageUrl = '/events-app/mock_img/8.png';
 
 const EditEvent = () => {
   const { eventId } = useParams();
-  const {currentEvent,loading,error, event, setEvent} = useSelector((state)=>state.events);
+  const {currentEvent,loading,error} = useSelector((state)=>state.events);
   const [show, setShow] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, is_staff } = useSelector((state) => state.auth); // Проверка на авторизацию
   const [imageFile, setImageFile] = useState(null);
-
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  // const [event, setEvent] = useState({
-  //   pk:null,
-  //   event_name: '',
-  //   event_type: '',
-  //   duration: '',
-  //   description: '',
-  //   img_url: '',
-  // });
+  const [event, setEvent] = useState({
+    pk:null,
+    event_name: '',
+    event_type: '',
+    duration: '',
+    description: '',
+    img_url: '',
+  });
 
   useEffect(() => {
     if (!isAuthenticated || !is_staff){
       navigate(`/403`);
     }
     if(eventId){
+      console.log(eventId);
+      console.log(event?.event_name);
+      console.log(currentEvent);
+
       dispatch(fetchEvent(eventId));
-      dispatch(setEvent(currentEvent));
+
+      setEvent(currentEvent);
+
+      console.log(event);
     }
   }, [dispatch, eventId]);
 
+  // Обработка состояния загрузки и ошибок
   if (loading) {
     return <div className="text-center my-5">Загрузка данных мероприятия...</div>;
   }
@@ -65,7 +72,7 @@ const EditEvent = () => {
   }
   const handleChange = (e) => {
     const { name, value } = e.target;
-    dispatch(setEvent((prev) => ({ ...prev, [name]: value })));
+    setEvent((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e) => {
@@ -80,8 +87,11 @@ const EditEvent = () => {
       formData.append('event_id', eventId);
       formData.append('pic', imageFile);
 
-      const response = await api.events.addImage({event_id:eventId,pic:imageFile}, {
-        headers: { 'X-CSRFToken': Cookies.get('csrftoken')},
+      const response = await axios.post('/api/events/image/',formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRFToken': Cookies.get('csrftoken'),
+        },
       });
 
       if (response.status === 201) {
@@ -113,19 +123,22 @@ const EditEvent = () => {
           'X-CSRFToken': Cookies.get('csrftoken'),
         },
       });
-      const eventData = await response.data;
+      console.log(response);
+      const eventData = await response.json();
       curr_id=eventData.pk;
-      }
-      let imageUrl = event.img_url;
-      if (imageFile) {
-        imageUrl = await uploadImage();
       }
 
       dispatch(fetchEvent(curr_id));
-
+      let imageUrl = event.img_url;
+      if (imageFile) {
+        // Сначала загружаем изображение
+        imageUrl = await uploadImage();
+      }
+      
       navigate('/events-table');
     } catch (err) {
       console.error('Ошибка при сохранении мероприятия:', err);
+      // setError('Не удалось сохранить данные. Проверьте введенные данные.');
     }
   };
 
@@ -192,7 +205,7 @@ const EditEvent = () => {
             required
             autoComplete="off"
             className="form-control col-auto pl-1"
-            placeholder="Тип мероприятия"
+            placeholder="Название мероприятия"
             style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
           />
         </p>
@@ -205,7 +218,7 @@ const EditEvent = () => {
             required
             autoComplete="off"
             className="form-control col-auto pl-1"
-            placeholder="Длительность мероприятия"
+            placeholder="Название мероприятия"
             style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
           />
         </p>
@@ -218,7 +231,7 @@ const EditEvent = () => {
             required
             autoComplete="off"
             className="form-control col-auto pl-1"
-            placeholder="Описание мероприятия"
+            placeholder="Название мероприятия"
             style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
           />
         </p>
@@ -232,7 +245,7 @@ const EditEvent = () => {
             required
             autoComplete="off"
             className="form-control col-auto pl-1"
-            placeholder="Изображение"
+            placeholder="Название мероприятия"
             style={{ height:'100%', border:'none', boxShadow: '0 1px 1px rgba(251, 195, 40, 0.075) inset'}}
           />
         </p>

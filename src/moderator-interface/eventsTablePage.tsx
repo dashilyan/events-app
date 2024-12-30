@@ -41,7 +41,7 @@ export default function EventsTable() {
       dispatch(fetchEvents());
 
     } catch (error) {
-      console.error('Ошибка при удалении мероприятия:', error);
+      console.error('Ошибка при удалении угрозы:', error);
     }
   };
   return (
