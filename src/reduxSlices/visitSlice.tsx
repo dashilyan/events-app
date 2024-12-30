@@ -148,20 +148,22 @@ export const fetchVisit = createAsyncThunk(
 );
 export const formVisit = createAsyncThunk(
   'visits/formVisit',
-  async (visitId, { dispatch, rejectWithValue }) => {
-    if (!visitId) return;
+  async ({visitId,events,group}, { dispatch, rejectWithValue }) => {
+    const allDatesValid = events.every(event => event.date != null);
+    if (!visitId || !allDatesValid || !group) return;
     try {
       const response = await api.formVisit.formVisitById(visitId);
-      console.log(response.status);
       if (response.status === 200) {
         const eventsData = [];
         const currentVisitId = null;
         const currentCount = 0;
-        return {eventsData, currentVisitId, currentCount};
-      } else {
-        return rejectWithValue({eventsData:null, currentVisitId:null, currentCount:0});
+        return { eventsData, currentVisitId, currentCount };
       }
-    } catch (error) {
+      else {
+          console.error("Ошибка: У некоторых событий нет поля 'date'");
+          return rejectWithValue({eventsData:null, currentVisitId:null, currentCount:0});
+        }
+      } catch (error) {
       return rejectWithValue({eventsData:null, currentVisitId:null, currentCount:0});
     }
   }

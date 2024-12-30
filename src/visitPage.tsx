@@ -86,7 +86,7 @@ const handleDateChange = async  (eventId) => {
 };
 
 const handleForm = async  () =>{
-  dispatch(formVisit(visitId));
+  dispatch(formVisit({visitId,events,group}));
   navigate('/events');
 };
 
