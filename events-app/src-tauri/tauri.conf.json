@@ -1,13 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "identifier":"com.tauri.dev",
-  "_isV2":true,
-  "productName":"",
-  "version":"",
-  "frontendDist":"../build",
-  "beforeBuildCommand":"",
-  "unzippedSigs":false,
-  
+  "productName":"events-app",
+  "version":"0.1.0",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://192.168.56.101:3000/events-app",
