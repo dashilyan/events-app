@@ -41,11 +41,12 @@ jobs:
 
       - name: Get package info
         id: get_package_info
+        shell: pwsh
         run: |
-              NAME=$(cat Cargo.toml | grep "^name =" | sed 's/^name = "//' | sed 's/"//' )
-              VERSION=$(cat Cargo.toml | grep "^version =" | sed 's/^version = "//' | sed 's/"//')
-              echo "name=$NAME" >> "$GITHUB_OUTPUT"
-              echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+           $name = (Get-Content Cargo.toml | Select-String -Pattern '^name = "(.+)"$' | ForEach-Object { $_.Matches[0].Groups[1].Value })
+           $version = (Get-Content Cargo.toml | Select-String -Pattern '^version = "(.+)"$' | ForEach-Object { $_.Matches[0].Groups[1].Value })
+           echo "name=$name" >> "$env:GITHUB_OUTPUT"
+           echo "version=$version" >> "$env:GITHUB_OUTPUT"
 
       - uses: tauri-apps/tauri-action@v0
         env:
