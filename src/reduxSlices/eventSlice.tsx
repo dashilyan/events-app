@@ -103,7 +103,24 @@ const initialState = {
   currentVisitId: null,
   currentCount: 0,
 
-  currentEvent: null,
+  currentEvent: {
+    pk:null,
+    event_name: '',
+    event_type: '',
+    duration: '',
+    description: '',
+    img_url: '',
+  },
+
+  event: {
+    pk:null,
+    event_name: '',
+    event_type: '',
+    duration: '',
+    description: '',
+    img_url: '',
+  },
+  imageFile: null,
 };
 
 const eventsSlice = createSlice({
@@ -122,6 +139,12 @@ const eventsSlice = createSlice({
     setCurrentVisitId: (state, action) => {
       state.currentVisitId = action.payload;
     },
+    setEvent: (state, action) => {
+      state.event=action.payload;
+    },
+    setImageFile: (state,action) => {
+      state.imageFile = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder

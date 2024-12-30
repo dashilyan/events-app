@@ -6,17 +6,13 @@ import Breadcrumbs from './breadcrumbs';
 import { Offcanvas } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import { api } from './api';
-// import { setCurrentCount, setCurrentVisitId } from './reduxSlices/eventSlice';
 import Cookies from 'js-cookie';
-import {fetchVisit, setEvents, deleteVisit,setGroup,formVisit} from './reduxSlices/visitSlice'
-// Мок-данные для заявок на мероприятия
+import {fetchVisit, setEvents, deleteVisit,setGroup,formVisit,updateEventDate, setInputDate, updateGroup, deleteEventVisit} from './reduxSlices/visitSlice'
 const defaultImageUrl = '/events-app/mock_img/8.png';
 
 const VisitPage = () => {
  const { visitId } = useParams();
- const {events, allowChanges, status, group,error} = useSelector((state)=>state.visits);
- const [inputDate, setInputDate] = useState('');
-
+ const {events, allowChanges, status, group,error, inputDate} = useSelector((state)=>state.visits);
  const { isAuthenticated} = useSelector((state) => state.auth); // Получаем данные о пользователе из Redux состояния
 
  const [show, setShow] = useState(false);
@@ -40,49 +36,13 @@ const handleDeleteVisit = async () => {
  };
 
  const handleGroupChange = async  () => {
-  if (!visitId) return;
-
-  try {
-    let csrfToken = Cookies.get('csrftoken');
-    const response = await api.visit.putVisitById(visitId, {group:group}, {
-      headers: {
-        'X-CSRFToken': csrfToken,
-      }
-    });
-    console.log('group change ok')
-    if (response.status !== 200) {
-      alert('Ошибка при удалении запроса');}
-  } catch (error) {
-    console.error('Ошибка:', error);
-  }
-
+  dispatch(updateGroup({visitId,group}));
   dispatch(fetchVisit(visitId));
  };
 
 const handleDateChange = async  (eventId) => {
-  if (!visitId || !eventId || inputDate === '') return; // Проверяем, что данные заполнены
-
-  try {
-    let csrfToken = Cookies.get('csrftoken');
-
-    const response = await api.editEventVisit.editEventInVisit(visitId, {}, {
-      headers: {
-        'X-CSRFToken': csrfToken,
-      },
-      body : JSON.stringify({ event_id:eventId, date:inputDate })
-    });
-    if (response.status === 200) {
-      dispatch(fetchVisit(visitId));
-
-    } else {
-      alert('Ошибка при обновлении стоимости');
-    }
-  } catch (error) {
-    console.error('Ошибка:', error);
-  }
-
-  // dispatch(fetchVisit(visitId));
-
+  dispatch(updateEventDate({visitId,eventId,inputDate}));
+  dispatch(fetchVisit(visitId));
 };
 
 const handleForm = async  () =>{
@@ -91,28 +51,7 @@ const handleForm = async  () =>{
 };
 
 const handleDeleteEventVisit = async (eventId) =>{
-  if (!visitId || !eventId) return;
-  try {
-    let csrfToken = Cookies.get('csrftoken');
-    const response = await fetch(`/api/edit-event-visit/${visitId}/`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken,
-      },
-      body: JSON.stringify({ event_id:eventId }),
-    });
-    console.log(response);
-    if (response.ok) {
-      // Успешно удалено
-      setEvents(events.filter((event) => event.id !== eventId)); // Обновляем список угроз
-    } else {
-      alert('Ошибка при удалении мероприятия');
-    }
-  } catch (error) {
-    console.error('Ошибка:', error);
-  }
-
+  dispatch(deleteEventVisit({visitId,eventId, events}));
   dispatch(fetchVisit(visitId));
 };
 
@@ -197,7 +136,7 @@ const handleDeleteEventVisit = async (eventId) =>{
       </div>
 
    <div className="main_visit">
-    {events.length > 0 ? (
+    {events?.length > 0 ? (
      events.map((event) => (
         <div className="container">
         <div className="event-card-long row my-4" key={event.pk} style={{minHeight:'14em', margin: '0 auto' }}>
@@ -211,11 +150,12 @@ const handleDeleteEventVisit = async (eventId) =>{
               type="date"
               name="date"
               className="form-control no-border px-3"
-              value = "2020-10-20"
+              // value = "2020-10-20"
               value={event.date}
               disabled={!allowChanges}
               onChange={(e) => {
-                setInputDate(e.target.value);
+                dispatch(setInputDate(e.target.value));
+                console.log(inputDate);
             }}
               onBlur={() => {
                 handleDateChange(event.pk)
@@ -265,7 +205,7 @@ const handleDeleteEventVisit = async (eventId) =>{
                 type="date"
                 name="date"
                 className="form-control no-border px-3"
-                value={ event.date ? event.date : inputDate || "0000-00-00"}
+                value={event.date}
                 disabled={!allowChanges}
                 onChange={(e) => {
                   dispatch(setInputDate(e.target.value));

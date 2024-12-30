@@ -7,7 +7,7 @@ import Breadcrumbs from './breadcrumbs';
 import { api } from './api';
 import { useSelector, useDispatch } from 'react-redux';
 import { format, parseISO } from 'date-fns';
-import { fetchVisits } from './reduxSlices/visitSlice'
+import { fetchVisits, endVisit } from './reduxSlices/visitSlice'
 import { setCurrentVisitId } from './reduxSlices/eventSlice';
 import axios from 'axios'
 import Cookies from 'js-cookie'
@@ -104,34 +104,11 @@ useEffect(() => {
   }  
 }, [startDate, endDate, status, creator,dispatch, isAuthenticated]);
 
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     dispatch(fetchVisits({start_date:startDate,end_date:endDate,status_input:status}));
-  //   } else{
-  //     navigate(`/403`);
-  //   }  
-  // }, [isAuthenticated]);
-
   const handleEndVisit = async (visitId,accept_value) => {
-    try {
-      let csrfToken = Cookies.get('csrftoken');
-      const response = await fetch(`/api/moderate-visit/${visitId}/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({ accept:accept_value }),
-      });
-      // await axios.get(`/api/moderate-visit/${visitId}`);
-
-      dispatch(fetchVisits());
-      
-    } catch (error) {
-      console.error('Ошибка при отклонении заявки:', error);
-      // setError('Ошибка при отклонении заявки');
-    }
+    dispatch(endVisit({visitId:visitId, accept_value:accept_value}));
+    handleFetchVisits();
   };
+  
   return (
     <div>
       {/* Шапка */}
@@ -239,6 +216,7 @@ useEffect(() => {
         ) : (
           <></>
         )}
+        <div className="table-responsive"> 
          <Table striped bordered hover className="custom-table mt-4" style={{'--bs-table-border-color':'white'}}>
              <thead>
                  <tr>
@@ -248,8 +226,9 @@ useEffect(() => {
                      <th>Дата создания</th>
                      <th>Дата формирования</th>
                      <th>Дата завершения</th>
-                     <th>Группа</th>
+                     <th>Индекс группы студентов</th>
                      <th>Количество посетителей</th>
+                     <th>Инструменты</th>
                  </tr>
              </thead>
              <tbody>
@@ -276,7 +255,7 @@ useEffect(() => {
                           <Link to={`/visit/${visit.pk}`} className='add-event-button'>Детали</Link>
                           {is_staff ? (
                             <>
-<button
+                          <button
                           onClick={(e) => {
                             e.preventDefault();
                             handleEndVisit(visit.pk,true)
@@ -301,6 +280,7 @@ useEffect(() => {
                  ))}
              </tbody>
          </Table>
+         </div>
         </div>
         </div>
   );
