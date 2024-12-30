@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "identifier":"com.tauri.dev",
+  "identifier":"com.myapp.eventsapp",
   "productName":"events-app",
   "version":"0.1.0",
   "build": {
