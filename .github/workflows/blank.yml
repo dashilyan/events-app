@@ -5,8 +5,6 @@ on:
     branches:
       - moderator-interface
 
-# This workflow will trigger on each push to the `release` branch to create or update a GitHub release, build your app, and upload the artifacts to the release.
-
 jobs:
   publish-tauri:
     permissions:
@@ -15,10 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-            args: ''
+          - platform: 'ubuntu-22.04'
           - platform: 'windows-latest'
-            args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -32,28 +28,32 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
-        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
       - name: install frontend dependencies
-        run: npm install # change this to npm, pnpm or bun depending on which one you use.
+        run: npm install
+
+      - name: Get package info
+        id: get_package_info
+        run: |
+              NAME=$(cat Cargo.toml | grep "^name =" | sed 's/^name = "//' | sed 's/"//' )
+              VERSION=$(cat Cargo.toml | grep "^version =" | sed 's/^version = "//' | sed 's/"//')
+              echo "name=$NAME" >> "$GITHUB_OUTPUT"
+              echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - uses: tauri-apps/tauri-action@v0
         env:
-          CARGO_HOME: C:\Users\runneradmin/.cargo
           CARGO_INCREMENTAL: 0
           CARGO_TERM_COLOR: always
-          GITHUB_TOKEN: ${{ secrets.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 }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          tagName: app-v__VERSION__
           releaseName: 'App v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
@@ -63,4 +63,5 @@ jobs:
           includeRelease: true
           includeUpdaterJson: true
           updaterJsonKeepUniversal: false
-          args: ${{ matrix.args }}
+          packageName: ${{ steps.get_package_info.outputs.name }}
+          packageVersion: ${{ steps.get_package_info.outputs.version }}
