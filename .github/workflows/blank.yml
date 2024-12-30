@@ -13,56 +13,51 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'ubuntu-22.04'
+          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+            args: ''
           - platform: 'windows-latest'
+            args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
 
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
+        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: 'yarn' # Set this to npm, yarn or pnpm.
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
 
       - name: install frontend dependencies
-        run: npm install
-
-      - name: Get package info
-        id: get_package_info
-        shell: pwsh
-        run: |
-           $name = (Get-Content ./Cargo.toml | Select-String -Pattern '^name = "(.+)"$' | ForEach-Object { $_.Matches[0].Groups[1].Value })
-           $version = (Get-Content ./Cargo.toml | Select-String -Pattern '^version = "(.+)"$' | ForEach-Object { $_.Matches[0].Groups[1].Value })
-           echo "name=$name" >> "$env:GITHUB_OUTPUT"
-           echo "version=$version" >> "$env:GITHUB_OUTPUT"
+        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
+        run: yarn install # change this to npm or pnpm depending on which one you use.
 
       - uses: tauri-apps/tauri-action@v0
         env:
-          CARGO_INCREMENTAL: 0
-          CARGO_TERM_COLOR: always
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.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 }}
         with:
-          tagName: app-v__VERSION__
+          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: 'App v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: false
-          projectPath: .
-          includeDebug: false
-          includeRelease: true
-          includeUpdaterJson: true
-          updaterJsonKeepUniversal: false
-          packageName: ${{ steps.get_package_info.outputs.name }}
-          packageVersion: ${{ steps.get_package_info.outputs.version }}
+          args: ${{ matrix.args }}
